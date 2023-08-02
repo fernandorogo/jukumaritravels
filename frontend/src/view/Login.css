@@ -1,0 +1,14 @@
+.imgfondo{
+    /* Ruta de la imagen de fondo */
+  background-image: url('../image/Bg.jpg');
+
+  /* Propiedades para ajustar la imagen */
+  background-size:cover; /* Ajusta el tamaño de la imagen para cubrir todo el contenedor */
+  background-position: center; /* Centra la imagen horizontal y verticalmente */
+  background-repeat: no-repeat; /* Evita que la imagen se repita si el contenedor es más grande */
+  width: auto;
+  height: 80vh;
+  
+  /* Si deseas añadir un color de fondo detrás de la imagen (por si la imagen no ocupa todo el espacio del contenedor) */
+ 
+}
