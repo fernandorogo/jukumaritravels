@@ -81,7 +81,7 @@ categoriadestinoCtrl.update = async (req, res) => {
         await categoria.updateOne(categoriaUpdate)
         res.json({
             ok: true,
-            message: 'La categoria fue actualizado'
+            message: 'La categoria fue actualizada'
         })
     } catch (error) {
         res.status(500).json({

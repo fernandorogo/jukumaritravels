@@ -3,7 +3,7 @@ const reservasModel = require('../models/reservas.model')
 
 reservasCtrl.list = async (req, res) => {
     try {
-        const reservas = await reservasModel.find().populate("clientes", {nombre1Cliente:1}).populate("paquetesturisticos");
+        const reservas = await reservasModel.find().populate("clientes", { nombre1Cliente: 1 }).populate("paquetesturisticos");
         res.json({
             ok: true,
             reservas
@@ -40,10 +40,9 @@ reservasCtrl.listid = async (req, res) => {
 }
 reservasCtrl.add = async (req, res) => {
     try {
-        const { fechaReserva,  paqueteTuristico_id, fechaSalida, fechaLlegada, pasajeros, clientes,paquetesturisticos } = req.body
+        const { fechaReserva, paqueteTuristico_id, fechaSalida, fechaLlegada, pasajeros, clientes, paquetesturisticos } = req.body
         const newReserva = new reservasModel({
             fechaReserva,
-            //cliente_id,
             paqueteTuristico_id,
             fechaSalida,
             fechaLlegada,
@@ -77,7 +76,6 @@ reservasCtrl.update = async (req, res) => {
             })
         }
         const fechaReserva = req.body.fechaReserva || reserva.fechaReserva
-        //const cliente_id = req.body.cliente_id || reserva.cliente_id
         const paqueteTuristico_id = req.body.paqueteTuristico_id || reserva.paqueteTuristico_id
         const fechaSalida = req.body.fechaSalida || reserva.fechaSalida
         const fechaLlegada = req.body.fechaLlegada || reserva.fechaLlegada
@@ -87,7 +85,6 @@ reservasCtrl.update = async (req, res) => {
 
         const reservaUpdate = {
             fechaReserva,
-           // cliente_id,
             paqueteTuristico_id,
             fechaSalida,
             fechaLlegada,

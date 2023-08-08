@@ -9,15 +9,12 @@ const paqueteturisticoSchema = new Schema({
         type: String,
         required: true,
     },
-/*destino_id: {
-        type: Number,
-        required: true
-    },*/
     valordelPaquete: {
         type: Number,
         required: true
     },
     destinos: [{ type:Schema.Types.ObjectId, ref: "destinos"}],
+    detallepaquete: [{ type:Schema.Types.ObjectId, ref: "detallepaquete"}]
 
 },
     {

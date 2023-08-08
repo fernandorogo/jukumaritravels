@@ -3,7 +3,7 @@ const productosturisticosModel = require('../models/productosturisticos.model')
 
 productosturisticosCtrl.list = async (req, res) => {
     try {
-        const productosturisticos = await productosturisticosModel.find()
+        const productosturisticos = await productosturisticosModel.find().populate("destinos");
         res.json({
             ok: true,
             productosturisticos
@@ -40,11 +40,11 @@ productosturisticosCtrl.listid = async (req, res) => {
 }
 productosturisticosCtrl.add = async (req, res) => {
     try {
-        const { productosTuristicos, detalleProductosturisticos, destino_id } = req.body
+        const { productosTuristicos, detalleProductosturisticos, destinos } = req.body
         const newproductoturistico = new productosturisticosModel({
             productosTuristicos,
             detalleProductosturisticos,
-            destino_id,
+            destinos
 
         });
         await newproductoturistico.save();
@@ -74,13 +74,13 @@ productosturisticosCtrl.update = async (req, res) => {
         }
         const productosTuristicos = req.body.productosTuristicos || productoturistico.productosTuristicos
         const detalleProductosturisticos = req.body.detalleProductosTuristicos || productoturistico.detalleProductosturisticos
-        const destino_id = req.body.destino_id || productoturistico.destino_id
+        const destinos = req.body.destinos || productoturistico.destinos
 
 
         const productoturisticoUpdate = {
             productosTuristicos,
             detalleProductosturisticos,
-            destino_id,
+            destinos
 
         }
         await productoturistico.updateOne(productoturisticoUpdate)

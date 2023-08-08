@@ -3,7 +3,7 @@ const paquetesturisticosModel = require('../models/paquetesturisticos.model')
 
 paquetesturisticosCtrl.list = async (req, res) => {
     try {
-        const paquetesturisticos = await paquetesturisticosModel.find().populate("destinos")
+        const paquetesturisticos = await paquetesturisticosModel.find().populate("destinos").populate("detallepaquete")
         res.json({
             ok: true,
             paquetesturisticos
@@ -24,7 +24,7 @@ paquetesturisticosCtrl.listid = async (req, res) => {
         if (!paqueteturistico) {
             res.status(404).json({
                 ok: false,
-                message: 'paquete turistico no encontrada'
+                message: 'Paquete turistico no encontrado'
 
             })
         }
@@ -40,14 +40,14 @@ paquetesturisticosCtrl.listid = async (req, res) => {
 }
 paquetesturisticosCtrl.add = async (req, res) => {
     try {
-        const { paqueteTuristico, reseñaPaqueteturistico, destino_id, valordelPaquete, destinos} = req.body
+        const { paqueteTuristico, reseñaPaqueteturistico, valordelPaquete, destinos, detallepaquete } = req.body
         const newpaqueteturistico = new paquetesturisticosModel({
             paqueteTuristico,
             reseñaPaqueteturistico,
-            destino_id,
             valordelPaquete,
-            destinos
-           
+            destinos,
+            detallepaquete
+
         });
         await newpaqueteturistico.save();
         res.json({
@@ -70,29 +70,29 @@ paquetesturisticosCtrl.update = async (req, res) => {
         if (!paqueteturistico) {
             res.status(404).json({
                 ok: false,
-                message: 'paqueteturistico no encontrada'
+                message: 'Paquete turistico no encontrado'
 
             })
         }
         const paqueteTuristico = req.body.paqueteTuristico || paqueteturistico.paqueteTuristico
         const reseñaPaqueteturistico = req.body.reseñaPaqueteturistico || paqueteturistico.reseñaPaqueteturistico
-        const destino_id = req.body.destino_id || paqueteturistico.destino_id
         const valordelPaquete = req.body.valordelPaquete || paqueteturistico.valordelPaquete
         const destinos = req.body.destinos || paqueteturistico.destinos
+        const detallepaquete = req.body.detallepaquete || paqueteturistico.detallepaquete
 
         const paqueteturisticoUpdate = {
             paqueteTuristico,
             reseñaPaqueteturistico,
-            destino_id,
             valordelPaquete,
-            destinos
-            
+            destinos,
+            detallepaquete
+
 
         }
         await paqueteturistico.updateOne(paqueteturisticoUpdate)
         res.json({
             ok: true,
-            message: 'El paqueteturistico fue actualizado'
+            message: 'El paquete turistico fue actualizado'
         })
     } catch (error) {
         res.status(500).json({
@@ -108,7 +108,7 @@ paquetesturisticosCtrl.delete = async (req, res) => {
         if (!paqueteturistico) {
             res.status(404).json({
                 ok: false,
-                message: 'paqueteturistico no encontrado'
+                message: 'Paquete turistico no encontrado'
 
             })
         }
@@ -116,7 +116,7 @@ paquetesturisticosCtrl.delete = async (req, res) => {
         await paqueteturistico.deleteOne();
         res.json({
             ok: true,
-            message: 'paqueteturistico eliminado'
+            message: 'Paquete turistico eliminado'
         })
 
     } catch (error) {
@@ -129,5 +129,4 @@ paquetesturisticosCtrl.delete = async (req, res) => {
 
 
 module.exports = paquetesturisticosCtrl;
-
 
