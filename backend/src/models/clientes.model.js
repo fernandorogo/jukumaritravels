@@ -43,6 +43,15 @@ const clienteSchema = new Schema({
         type: Date,
         required: true
     },
+    paisCliente: {
+        type: String,
+    },
+    departamentoCliente: {
+        type: String,
+    },
+    municipioCliente: {
+        type: String,
+    },
     tipodocumentoTitular: {
         type: String,
 
@@ -59,15 +68,7 @@ const clienteSchema = new Schema({
         type: String,
         required: true
     },
-    pais: {
-        type: String,
-    },
-    departamento: {
-        type: String,
-    },
-    municipio: {
-        type: String,
-    }
+    
 
 
 },

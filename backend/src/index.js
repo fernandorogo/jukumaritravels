@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const morgan = require("morgan");
 const cors = require("cors");
 require('./database');
@@ -14,9 +15,14 @@ app.use(express.json());
 //cors nos sirve para permitir conexiones desde cualquier cliente
 app.use(cors({ origin: "*" }));
 
-//rutas o vistas
+// Ruta para servir el archivo listaPaisDeptCiudad.json desde la carpeta "models"
+app.get('/listaPaisDeptCiudad', (req, res) => {
+    const filePath = path.join(__dirname, 'models', 'listaPaisDeptCiudad.json');
+    res.sendFile(filePath);
+  });
 
-app.use('/api/clientes', require('./routes/clientes.route'));
+//rutas o vistas
+app.use('/api/clientes/', require('./routes/clientes.route'));
 app.use('/api/reservas', require('./routes/reservas.route'));
 app.use('/api/pasajeros', require('./routes/pasajerosdelareserva.route'));
 app.use('/api/paquetes', require('./routes/paquetesturiticos.route'));
@@ -25,7 +31,6 @@ app.use('/api/productos', require('./routes/productosturisticos.route'));
 app.use('/api/destinos', require('./routes/destinos.route'));
 app.use('/api/categorias', require('./routes/categoriadestino.route'))
 app.use('/api/proveedores', require('./routes/proveedores.route'));
-
 
 //Inicando nuestro servidor
 app.listen(app.get("Port"), () => {
