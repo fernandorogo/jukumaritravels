@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Route, Routes, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import listaDestinosTuristicos from '../view/ListaDestinosTuristicos';
 
 const Footer2 = () => {
