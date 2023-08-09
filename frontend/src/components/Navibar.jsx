@@ -61,7 +61,6 @@ const Navibar = () => {
                   Inicio de sesión
                 </Link>
               </li>
-
             </ul>
           </div>
         </div>

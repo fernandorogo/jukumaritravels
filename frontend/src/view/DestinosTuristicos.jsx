@@ -28,7 +28,7 @@ const DestinosTuristicos = () => {
       <div className="row mb-3">
         <div className="col-md-6">
           <label htmlFor="filtroCiudad" className="form-label">
-            Filtrar por ciudad:
+            Filtrar por ciudad: felter gilter filter
           </label>
           <input
             type="text"
