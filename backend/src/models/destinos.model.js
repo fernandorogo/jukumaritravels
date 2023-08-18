@@ -1,21 +1,18 @@
 const { Schema, model } = require('mongoose');
 
 const destinoSchema = new Schema({
-    Destino: {
+    nombreDestino: {
         type: String,
         required: true
 
-    },
-    categoriaDestino_id: {
-        type: Number,
-        required: true
     },
     ubicacion: {
         type: String,
     },
     descripcionDestino: {
         type: String
-    }
+    },
+    categoriadestinos: [{ type: Schema.Types.ObjectId, ref: "categoriadestinos" }]
 },
     {
         timestamps: true,

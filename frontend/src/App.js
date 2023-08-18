@@ -7,7 +7,6 @@ import DestinosTuristicos from "./view/DestinosTuristicos";
 import Login from "./view/Login"
 import Aplication from './dashoboard/Aplication'
 
-
 function App() {
   return (
     <div className="App">

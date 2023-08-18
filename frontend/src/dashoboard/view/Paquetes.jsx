@@ -1,12 +1,96 @@
-import React from 'react'
+import axios from 'axios'
+import React, { useEffect, useState } from 'react'
+import Swal from 'sweetalert2';
 
 
 const Paquetes = () => {
+  const [paquetesturisticos, setPaquetesturisticos] = useState([])
+  const [paqueteTuristico, setpaqueteTuristico] = useState('')
+  const [reseñaPaqueteturistico, setreseñaPaqueteturistico] = useState('')
+  const [valordelPaquete, setvalordelPaquete] = useState('')
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const cleanData = () => {
+    setPaquetesturisticos('')
+    setpaqueteTuristico('')
+    setreseñaPaqueteturistico('')
+    setvalordelPaquete('')
+  }
+  const getData = async () => {
+    const { data } = await axios.get("http://localhost:4000/api/paquetes/");
+    setPaquetesturisticos(data.paquetesturisticos);
+  };
+  const savePaquete = async () => {
+    try {
+      const newPaquete = {
+        paqueteTuristico,
+        reseñaPaqueteturistico,
+        valordelPaquete,
+
+      }
+      await axios.post('http://localhost:4000/api/paquetes/', newPaquete);
+      cleanData();
+      getData();
+
+      // SweetAlert2 para mostrar éxito
+      Swal.fire({
+        icon: 'success',
+        title: 'Paquete guardado exitosamente',
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+    } catch (error) {
+      if (!error.response.data.ok) {
+        return alert(error.response.data.message)
+      }
+      console.log('error en savePaquete', error.message);
+
+
+    }
+  }
+  const actions = (e) => {
+    e.preventDefault();
+    savePaquete();
+  };
+  const deletePaquete = async (id) => {
+    try {
+      Swal.fire({
+        title: 'Esta seguro?',
+        text: "No podras revertir el proceso!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, eliminar!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          const { data } = await axios.delete('http://localhost:4000/api/paquetes/' + id);
+          getData();
+          Swal.fire({
+            icon: 'success',
+            title: data.message,
+            showConfirmButton: false,
+            timer: 1500
+          })
+        }
+      })
+    } catch (error) {
+      if (!error.response.data.ok) {
+        return alert(error.response.data.message)
+      }
+      console.log('error en deletePaquete', error.message);
+    }
+  }
+
+
   return (
     <div>
-
+      
       <div className='container-md mt-5'>
-
 
         <button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} data-bs-toggle="modal" data-bs-target="#exampleModal">
           < i className="fa-solid fa-plus fa-beat fa-lg me-2" style={{ color: "#ffffff" }}></i> PAQUETE
@@ -15,128 +99,84 @@ const Paquetes = () => {
 
         <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header" style={{ backgroundColor: "#008cba" }}>
-                <h5 className="modal-title text-white" id="exampleModalLabel">Ingreso de Paquetes</h5>
-                <button type="button" className="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div className="modal-body">
-                <form className="row g-3 needs-validation" noValidate>
-                  <div className="col-md-3 mb-3">
-                    <label htmlFor="validationCustom02" className="form-label">Codigo Paquete</label>
-                    <input type="number" className="form-control" id="validationCustom02" required />
-                    <div className="valid-feedback"></div>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <label htmlFor="validationCustom01" className="form-label">Nombre Paquete</label>
-                    <input type="text" className="form-control" id="validationCustom01" required />
-                    <div className="valid-feedback"></div>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <label htmlFor="validationCustom02" className="form-label">ID destino</label>
-                    <input type="number" className="form-control" id="validationCustom02" required />
-                    <div className="valid-feedback"></div>
-                  </div>
-                  <div className="col-12 mb-3">
-                    <label htmlFor="exampleFormControlTextarea1" className="form-label">Reseña del paquete</label>
-                    <textarea className="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label htmlFor="validationCustom02" className="form-label">Valor</label>
-                    <input type="number" className="form-control" id="validationCustom02" required />
-                    <div className="valid-feedback"></div>
-                  </div>
-                </form>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" className="btn btn-primary">Guardar Registro</button>
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <div className="modal-header" style={{ backgroundColor: "#008cba" }}>
+                  <h5 className="modal-title text-white" id="exampleModalLabel">Ingreso de Paquetes</h5>
+                  <button type="button" className="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div className="modal-body ">
+                  <form onSubmit={actions}>
+                    <div className="col-md-12">
+                      <label htmlFor="validationCustom01" className="form-label"> Nombre del Paquete</label>
+                      <input type="text" className="form-control" id="paqueteTuristico"
+                        value={paqueteTuristico} onChange={(e) => setpaqueteTuristico(e.target.value.toUpperCase())}
+                        required />
+                    </div>
+                    <div className="col-md-12">
+                      <label for="exampleFormControlTextarea1" className="form-label">Reseña de paquete</label>
+                      <textarea className="form-control" id="reseñaPaqueteturistico"
+                        value={reseñaPaqueteturistico} onChange={(e) => setreseñaPaqueteturistico(e.target.value.toUpperCase())}></textarea>
+                    </div>
+                    <div className="col-md-12">
+                      <label htmlFor="validationCustom01" className="form-label"> Valor</label>
+                      <input type="Number" className="form-control" id="valordelPaquete"
+                        value={valordelPaquete} onChange={(e) => setvalordelPaquete(e.target.value.toUpperCase())} />
+
+                    </div>
+                    <div className="modal-footer">
+                      <button type="button" className="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                      <button type="submit" className="btn text-white" style={{ backgroundColor: "#008cba" }}>Guardar Registro</button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <br></br>
+      <br></br>
+
+      <div className='container-md table-responsive'>
+        <table className="table table-bordered border-dark table-hover ">
+          <thead className= ''>
+            <tr style={{ backgroundColor: "#008cba", color: "#ffffff"}}>
+              <th scope="col">#</th>
+              <th scope="col">Nombre Paquete</th>
+              <th scope="col">Reseña del Paquete</th>
+              <th scope="col">Valor</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead >
+          <tbody>
+            {Array.isArray(paquetesturisticos) && paquetesturisticos.map((item, i) => (
+              <tr key={item._id}>
+                <td>{i + 1}</td>
+                <td>{item.paqueteTuristico}</td>
+                <td>{item.reseñaPaqueteturistico}</td>
+                <td>{item.valordelPaquete}</td>
 
 
-        <br></br>
-        <br></br>
-
-        <div className='container-md'>
-          <div className='container-md'>
-            <table className="table table-bordered table-hover">
-              <thead>
-                <tr>
-                  <th scope="col">Id</th>
-                  <th scope="col">Primero</th>
-                  <th scope="col">Último</th>
-                  <th scope="col">Handle</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                  <td><button type="button" className="btn btn-success" style={{ width: '135px', height: '35px' }}>Activo</button></td>
-                  <td>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-primary'> <i className="fa-solid fa-pencil space-i "></i></span>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-danger'><i className="fa-solid fa-trash"></i></span>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                  <td><button type="button" className="btn btn-success" style={{ width: '135px', height: '35px' }}>Activo</button></td>
-                  <td>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-primary'> <i className="fa-solid fa-pencil space-i "></i></span>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-danger'><i className="fa-solid fa-trash"></i></span>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                  <td><button type="button" className="btn btn-success" style={{ width: '135px', height: '35px' }}>Activo</button></td>
-                  <td>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-primary'> <i className="fa-solid fa-pencil space-i "></i></span>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-danger'><i className="fa-solid fa-trash"></i></span>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                  <td><button type="button" className="btn btn-danger" style={{ width: '135px', height: '35px' }}>Cancelado</button></td>
-                  <td>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-primary'> <i className="fa-solid fa-pencil space-i "></i></span>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-danger'><i className="fa-solid fa-trash"></i></span>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">1</th>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                  <td><button type="button" className="btn btn-success" style={{ width: '135px', height: '35px' }}>Activo</button></td>
-                  <td>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-primary'> <i className="fa-solid fa-pencil space-i "></i></span>
-                    <span style={{ border: "1px solid silver", borderRadius: "0.25em", padding: "0.5em" }} className='me-2 btn-danger'><i className="fa-solid fa-trash"></i></span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
+                <td>
+                  <div className='d-flex justify-content-between'>
+                    <span className='btn btn-primary me-2  '>
+                      <i className=" fa-solid fa-pencil space-i "></i>
+                    </span>
 
 
+                    <span className='btn btn-danger me-2  '
+                      onClick={() => deletePaquete(item._id)}
+                    ><i className="fa-solid fa-trash"></i></span>
+                  </div>
 
+                </td>
+              </tr>
+            ))}
+
+
+          </tbody>
+        </table>
       </div>
     </div>
   )

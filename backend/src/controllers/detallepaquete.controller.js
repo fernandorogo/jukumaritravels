@@ -3,10 +3,10 @@ const detallepaqueteModel = require('../models/detallepaquete.model')
 
 detallepaqueteCtrl.list = async (req, res) => {
     try {
-        const detallePaquete = await detallepaqueteModel.find().populate("productosturisticos").
+        const detallepaquete = await detallepaqueteModel.find().populate("productosturisticos")
         res.json({
             ok: true,
-            detallePaquete
+            detallepaquete
 
         })
     }
@@ -40,11 +40,11 @@ detallepaqueteCtrl.listid = async (req, res) => {
 }
 detallepaqueteCtrl.add = async (req, res) => {
     try {
-        const { detallePaquete, productosturisticos} = req.body
+        const { detallePaquete, productosturisticos } = req.body
         const newdetallepaquete = new detallepaqueteModel({
             detallePaquete,
             productosturisticos
-    
+
 
         });
         await newdetallepaquete.save();
@@ -68,7 +68,7 @@ detallepaqueteCtrl.update = async (req, res) => {
         if (!detallepaquete) {
             res.status(404).json({
                 ok: false,
-                message: 'detallepaquete no encontrada'
+                message: 'Detalle de paquete no encontrado'
 
             })
         }
@@ -78,7 +78,7 @@ detallepaqueteCtrl.update = async (req, res) => {
         const detallepaqueteUpdate = {
             detallePaquete,
             productosturisticos
-        
+
 
 
         }

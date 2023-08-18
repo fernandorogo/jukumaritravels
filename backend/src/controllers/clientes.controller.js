@@ -45,7 +45,7 @@ clientesCtrl.add = async (req, res) => {
 
         const verificar = await clientesModel.findOne({ correoelectronicoCliente });
         if (verificar) {
-            return res.json({
+            return res.status(400).json({
                 ok: false,
                 message: "El correo ya esta registrado con otro cliente"
             })

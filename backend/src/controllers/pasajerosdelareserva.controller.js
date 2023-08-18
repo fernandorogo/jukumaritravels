@@ -3,7 +3,7 @@ const pasajerosdelareservaModel = require('../models/pasajerosdelareserva.model'
 
 pasajerosdelareservaCtrl.list = async (req, res) => {
     try {
-        const pasajerosdelareserva = await pasajerosdelareservaModel.find().populate("clientes", {nombre1Cliente:1} ).populate("reservas") 
+        const pasajerosdelareserva = await pasajerosdelareservaModel.find().populate("clientes", { nombre1Cliente: 1 }).populate("reservas")
         res.json({
             ok: true,
             pasajerosdelareserva
@@ -24,7 +24,7 @@ pasajerosdelareservaCtrl.listid = async (req, res) => {
         if (!pasajerosdelareserva) {
             res.status(404).json({
                 ok: false,
-                message: 'pasajeros de reserva no encontrada'
+                message: 'Pasajeros de reserva no encontrado'
 
             })
         }
@@ -67,7 +67,7 @@ pasajerosdelareservaCtrl.update = async (req, res) => {
         if (!pasajerosdelareserva) {
             res.status(404).json({
                 ok: false,
-                message: 'Reserva no encontrada'
+                message: 'Pasajeros de reserva no encontrado'
 
             })
         }
@@ -82,7 +82,7 @@ pasajerosdelareservaCtrl.update = async (req, res) => {
         await pasajerosdelareserva.updateOne(pasajerosdelareservaUpdate)
         res.json({
             ok: true,
-            message: 'Pasajero de la reserva actualizado'
+            message: 'Pasajeros de la reserva actualizado'
         })
     } catch (error) {
         res.status(500).json({
@@ -98,7 +98,7 @@ pasajerosdelareservaCtrl.delete = async (req, res) => {
         if (!pasajerosdelareserva) {
             res.status(404).json({
                 ok: false,
-                message: 'Reserva no encontrada'
+                message: 'Pasajeros de reserva no encontrado'
 
             })
         }
@@ -106,7 +106,7 @@ pasajerosdelareservaCtrl.delete = async (req, res) => {
         await pasajerosdelareserva.deleteOne();
         res.json({
             ok: true,
-            message: 'Reserva eliminada'
+            message: 'Pasajeros de reserva eliminado'
         })
 
     } catch (error) {
@@ -117,4 +117,3 @@ pasajerosdelareservaCtrl.delete = async (req, res) => {
     }
 }
 module.exports = pasajerosdelareservaCtrl;
-

@@ -10,10 +10,7 @@ const productoturisticoSchema = new Schema({
         type: String,
         required: true,
     },
-    destino_id: {
-        type: Number,
-        required: true
-    }
+    destinos: [{ type:Schema.Types.ObjectId, ref: "destinos"}],
 
 },
     {

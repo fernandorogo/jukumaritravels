@@ -5,14 +5,7 @@ const reservaSchema = new Schema({
         type: String,
         
     },
-    /*cliente_id: {
-       type: Number,
-        required: true,
-    },*/
-    paqueteTuristico_id: {
-        type: Number,
-        
-    },
+   
     fechaSalida: {
         type: String,
        
@@ -25,9 +18,9 @@ const reservaSchema = new Schema({
         type: String,
         
     },
+    clientes: [{ type: Schema.Types.ObjectId, ref: "clientes" }],
 
-    clientes: [{ type:Schema.Types.ObjectId, ref: "clientes"}],
-    paquetesturisticos: [{ type:Schema.Types.ObjectId, ref: "paquetesturisticos"}]
+    paquetesturisticos: [{ type: Schema.Types.ObjectId, ref: "paquetesturisticos" }]
 },
     {
         timestamps: true,

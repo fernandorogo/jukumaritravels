@@ -74,6 +74,16 @@ const Cliente = () => {
       await axios.post('http://localhost:4000/api/clientes/', newCliente);
       cleanData();
       getData();
+
+      // SweetAlert2 para mostrar éxito
+      Swal.fire({
+        icon: 'success',
+        title: 'Cliente agregado exitosamente',
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+
     } catch (error) {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
@@ -254,7 +264,7 @@ const Cliente = () => {
                         onChange={(e) => setmunicipioCliente(e.target.value.toUpperCase())} />
                     </div>
 
-                    
+
                     {/* ... (código existente) ... */}
                     <div className="col-md-3">
                       <label htmlFor="esMenorEdad" className="form-label">Es menor de edad</label>
@@ -317,10 +327,10 @@ const Cliente = () => {
       {/* Fin del formulario*/}
 
       {/* Inicio de la tabla de Clientes*/}
-      <div className='container-md responsive'>
-        <table className="table table-bordered table-hover mt-5">
+      <div className='container-md table-responsive'>
+        <table className="table table-bordered border-dark table-hover mt-5">
           <thead>
-            <tr className='table-dark'>
+            <tr style={{ background: "#008cba", color: "#ffffff" }}>
               <th scope="col">#</th>
               <th scope="col">Nombre1</th>
               <th scope="col">Nombre2</th>
@@ -361,7 +371,7 @@ const Cliente = () => {
         </table>
       </div>
       {/* Fin de la tabla de Clientes*/}
-    <h1>PRUEBA</h1>
+
     </div>
   )
 }

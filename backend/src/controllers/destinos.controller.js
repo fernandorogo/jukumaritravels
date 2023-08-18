@@ -3,7 +3,7 @@ const destinosModel = require('../models/destinos.model')
 
 destinosCtrl.list = async (req, res) => {
     try {
-        const destinos = await destinosModel.find()
+        const destinos = await destinosModel.find().populate("categoriadestinos");
         res.json({
             ok: true,
             destinos
@@ -40,12 +40,12 @@ destinosCtrl.listid = async (req, res) => {
 }
 destinosCtrl.add = async (req, res) => {
     try {
-        const { Destino, categoriaDestino_id, ubicacion, descripcionDestino } = req.body
+        const { nombreDestino, ubicacion, descripcionDestino, categoriadestinos } = req.body
         const newDestino = new destinosModel({
-            Destino,
-            categoriaDestino_id,
+            nombreDestino,
             ubicacion,
-            descripcionDestino
+            descripcionDestino,
+            categoriadestinos
         });
         await newDestino.save();
         res.json({
@@ -73,15 +73,15 @@ destinosCtrl.update = async (req, res) => {
             })
         }
         const Destino = req.body.Destino || destino.Destino
-        const categoriaDestino_id = req.body.categoriaDestino_id || destino.categoriaDestino_id
         const ubicacion = req.body.ubicacion || destino.ubicacion
         const descripcionDestino = req.body.descripcionDestino || destino.descripcionDestino
+        const categoriadestinos = req.body.categoriadestinos || destino.categoriadestinos
 
         const destinoUpdate = {
             Destino,
-            categoriaDestino_id,
             ubicacion,
-            descripcionDestino
+            descripcionDestino,
+            categoriadestinos
 
         }
         await destino.updateOne(destinoUpdate)
@@ -103,7 +103,7 @@ destinosCtrl.delete = async (req, res) => {
         if (!destino) {
             res.status(404).json({
                 ok: false,
-                message: 'destino no encontrado'
+                message: 'Destino no encontrado'
 
             })
         }
@@ -111,7 +111,7 @@ destinosCtrl.delete = async (req, res) => {
         await destino.deleteOne();
         res.json({
             ok: true,
-            message: 'destino eliminado'
+            message: 'Destino eliminado'
         })
 
     } catch (error) {
