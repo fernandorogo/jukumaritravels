@@ -5,7 +5,7 @@ import Destinos from '../dashoboard/view/Destinos'
 import Cliente from '../dashoboard/view/Cliente'
 import Proveedores from '../dashoboard/view/Proveedores'
 import Paquetes from '../dashoboard/view/Paquetes'
-import Reserva from '../dashoboard/view/Reserva'
+import Reservas from '../dashoboard/view/Reservas'
 import NavbarDashboard from '../dashoboard/components/NavbarDashboard'
 import { Route, Routes } from 'react-router'
 
@@ -20,7 +20,7 @@ const Aplication = () => {
             <Route path='cliente' element={<Cliente/>}/>
             <Route path='proveedores' element={<Proveedores/>}/>
             <Route path='paquetes' element={<Paquetes/>}/>
-            <Route path='reserva' element={<Reserva/>}/>
+            <Route path='reservas' element={<Reservas/>}/>
         </Routes>
         
     </div>

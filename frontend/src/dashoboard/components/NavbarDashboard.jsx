@@ -36,7 +36,7 @@ const NavbarDashboard = () => {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link to="reserva" className="nav-link text-white" onClick={() => navigateTo('/')}>
+                <Link to="reservas" className="nav-link text-white" onClick={() => navigateTo('/')}>
                   <i className="fa-solid fa-hotel fa-sm me-2"></i>Reservas
                 </Link>
               </li>
