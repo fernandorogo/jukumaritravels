@@ -29,7 +29,8 @@ clientesCtrl.listid = async (req, res) => {
 
             })
         }
-        res.json({ ok: true, message: cliente });
+        const nombreCompleto = `${cliente.nombre1Cliente} ${cliente.nombre2Cliente} ${cliente.apellido1Cliente} ${cliente.apellido2Cliente}`;
+        res.json({ ok: true, message: cliente, nombreCompleto });
 
     } catch (error) {
         res.status(500).json({
@@ -39,9 +40,27 @@ clientesCtrl.listid = async (req, res) => {
     }
 
 }
+
 clientesCtrl.add = async (req, res) => {
     try {
-        const { nombre1Cliente, nombre2Cliente, apellido1Cliente, apellido2Cliente, tipodocumentoCliente, documentoCliente, correoelectronicoCliente, telefono1Cliente, telefono2Cliente, fechanacimientoCliente, tipodocumentoTitular, documentoTitular, parentezcoTitular, direccionCliente, pais, departamento, municipio } = req.body
+        const { 
+            nombre1Cliente, 
+            nombre2Cliente, 
+            apellido1Cliente, 
+            apellido2Cliente, 
+            tipodocumentoCliente, 
+            documentoCliente, 
+            fechanacimientoCliente,
+            correoelectronicoCliente, 
+            telefono1Cliente, 
+            telefono2Cliente,  
+            direccionCliente,
+            paisCliente,
+            estadoCliente,
+            ciudadCliente,
+            parentezcoCliente,
+            otroParentezco,
+            documentoTitular } = req.body
 
         const verificar = await clientesModel.findOne({ correoelectronicoCliente });
         if (verificar) {
@@ -52,23 +71,23 @@ clientesCtrl.add = async (req, res) => {
         }
 
         const newCliente = new clientesModel({
-            nombre1Cliente,
-            nombre2Cliente,
-            apellido1Cliente,
-            apellido2Cliente,
-            tipodocumentoCliente,
-            documentoCliente,
-            correoelectronicoCliente,
-            telefono1Cliente,
-            telefono2Cliente,
+            nombre1Cliente, 
+            nombre2Cliente, 
+            apellido1Cliente, 
+            apellido2Cliente, 
+            tipodocumentoCliente, 
+            documentoCliente, 
             fechanacimientoCliente,
-            tipodocumentoTitular,
-            documentoTitular,
-            parentezcoTitular,
+            correoelectronicoCliente, 
+            telefono1Cliente, 
+            telefono2Cliente,  
             direccionCliente,
-            pais,
-            departamento,
-            municipio,
+            paisCliente,
+            estadoCliente,
+            ciudadCliente,
+            parentezcoCliente,
+            otroParentezco,
+            documentoTitular
 
 
         });
@@ -102,40 +121,44 @@ clientesCtrl.update = async (req, res) => {
         const nombre2Cliente = req.body.nombre2Cliente || cliente.nombre2Cliente
         const apellido1Cliente = req.body.apellido1Cliente || cliente.apellido1Cliente
         const apellido2Cliente = req.body.apellido2Cliente || cliente.apellido2Cliente
+
         const tipodocumentoCliente = req.body.tipodocumentoCliente || cliente.tipodocumentoCliente
         const documentoCliente = req.body.documentoCliente || cliente.documentoCliente
+        const fechanacimientoCliente = req.body.fechanaciminetoCliente || cliente.fechanacimientoCliente
         const correoelectronicoCliente = req.body.correoelectronicoCliente || cliente.correoelectronicoCliente
+
         const telefono1Cliente = req.body.telefono1Cliente || cliente.telefono1Cliente
         const telefono2Cliente = req.body.telefono2Cliente || cliente.telefono2Cliente
-        const fechanacimientoCliente = req.body.fechanaciminetoCliente || cliente.fechanacimientoCliente
-        const tipodocumentoTitular = req.body.tipodocumentoTitular || cliente.tipodocumentoTitular
-        const documentoTitular = req.body.documentoTitular || cliente.documentoTitular
-        const parentezcoTitular = req.body.parentezcoTitular || cliente.parentezcoTitular
         const direccionCliente = req.body.direccionCliente || cliente.direccionCliente
-        const pais = req.body.paisoTitular || cliente.paisTitular
-        const departamento = req.body.departamento || cliente.departamento
-        const municipio = req.body.municipio || cliente.municipio
+
+        const parentezcoCliente = req.body.parentezcoCliente || cliente.parentezcoCliente
+        const otroParentezco = req.body.otroParentezco || cliente.otroParentezco
+        const documentoTitular = req.body.documentoTitular || cliente.documentoTitular
+        
+        const paisCliente = req.body.paisCliente || cliente.paisCliente
+        const estadoCliente = req.body.estadoCliente || cliente.estadoCliente
+        const ciudadCliente = req.body.ciudadCliente || cliente.ciudadCliente
 
 
 
         const clienteUpdate = {
-            nombre1Cliente,
-            nombre2Cliente,
-            apellido1Cliente,
-            apellido2Cliente,
-            tipodocumentoCliente,
-            documentoCliente,
-            correoelectronicoCliente,
-            telefono1Cliente,
-            telefono2Cliente,
+            nombre1Cliente, 
+            nombre2Cliente, 
+            apellido1Cliente, 
+            apellido2Cliente, 
+            tipodocumentoCliente, 
+            documentoCliente, 
             fechanacimientoCliente,
-            tipodocumentoTitular,
-            documentoTitular,
-            parentezcoTitular,
+            correoelectronicoCliente, 
+            telefono1Cliente, 
+            telefono2Cliente,  
             direccionCliente,
-            pais,
-            departamento,
-            municipio,
+            paisCliente,
+            estadoCliente,
+            ciudadCliente,
+            parentezcoCliente,
+            otroParentezco,
+            documentoTitular
 
 
         }
@@ -178,4 +201,27 @@ clientesCtrl.delete = async (req, res) => {
         })
     }
 }
+
+clientesCtrl.verificarDocumento = async (req, res) => {
+    try {
+      const documento = req.params.documento;
+  
+      // Buscar un cliente por su número de documento en la base de datos
+      const clienteEncontrado = await clientesModel.findOne({ documentoCliente: documento });
+  
+      // Enviar respuesta al frontend si el cliente fue encontrado o no
+      if (clienteEncontrado) {
+        const nombreCompleto = `${clienteEncontrado.nombre1Cliente} ${clienteEncontrado.nombre2Cliente} ${clienteEncontrado.apellido1Cliente} ${clienteEncontrado.apellido2Cliente}`;
+        res.json({ exists: true, nombreCompleto }); // Cliente encontrado
+      } else {
+        res.json({ exists: false }); // Cliente no encontrado
+      }
+    } catch (error) {
+      console.error('Error al verificar el documento:', error);
+      res.status(500).json({ error: 'Error al verificar el documento' });
+    }
+  };
+  
+  
+
 module.exports = clientesCtrl;

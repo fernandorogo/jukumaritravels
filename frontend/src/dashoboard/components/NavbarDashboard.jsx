@@ -102,4 +102,4 @@ const NavbarDashboard = () => {
   )
 }
 
-export default NavbarDashboard
+export default NavbarDashboard;
