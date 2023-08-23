@@ -1,7 +1,7 @@
 const estadoCtrl = {};
 const estadoModel = require('../models/estado.model');
 const paisModel = require('../models/pais.model');
-const mongoose = require('mongoose'); 
+const mongoose = require('mongoose');
 
 //Listar todos los Estados
 estadoCtrl.listAll = async (req, res) => {
@@ -75,9 +75,13 @@ estadoCtrl.listid = async (req, res) => {
             return;
         }
 
+        const estado = estadoConCiudades[0];
+        const ciudades = estado.ciudades;
+
         res.json({
             ok: true,
-            estado: estadoConCiudades[0]
+            estado,
+            ciudades,
         });
     } catch (error) {
         res.status(500).json({
@@ -257,5 +261,8 @@ estadoCtrl.addMany = async (req, res) => {
     }
 };
 */}
+
+
+
 
 module.exports = estadoCtrl;

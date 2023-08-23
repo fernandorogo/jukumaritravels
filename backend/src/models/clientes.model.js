@@ -17,7 +17,6 @@ const clienteSchema = new Schema({
     },
     apellido2Cliente: {
         type: String,
-        required: true,
         maxlength: 20
     },
     tipodocumentoCliente: {
@@ -26,7 +25,9 @@ const clienteSchema = new Schema({
     },
     documentoCliente: {
         type: Number,
+        maxlength: 20,
         required: true
+        
     },
     fechanacimientoCliente: {
         type: Date,

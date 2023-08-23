@@ -11,4 +11,6 @@ route.post('/addmany', estadoCtrl.addMany);
 route.delete('/delete/:id', estadoCtrl.delete);*/}
 
 
+
+
 module.exports = route

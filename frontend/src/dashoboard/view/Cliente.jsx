@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { DateTime } from 'luxon';
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
+
 
 const Cliente = () => {
   const [clientes, setClientes] = useState([])
@@ -18,10 +20,23 @@ const Cliente = () => {
   const [telefono1Cliente, settelefono1Cliente] = useState('')
   const [telefono2Cliente, settelefono2Cliente] = useState('')
   const [direccionCliente, setdireccionCliente] = useState('')
-  //Linea4
-  const [paisCliente, setpaisCliente] = useState('');
-  const [estadoCliente, setestadoCliente] = useState('');
-  const [ciudadCliente, setciudadCliente] = useState('');
+  //Linea4 campos para almacenar el cambio de estado de la ubicacion del cliente
+  const [paisCliente, setPaisCliente] = useState('');
+  const [estadoCliente, setEstadoCliente] = useState('');
+  const [ciudadCliente, setCiudadCliente] = useState('');
+  //----------------------------------------------------------------
+  // Estos estados y cambios de estado son relacionados con los Select o listas desplegables
+  const [paises, setPaises] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
+  const [paisSeleccionado, setPaisSeleccionado] = useState("");
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
+  const [ciudadSeleccionada, setCiudadSeleccionada] = useState("");
+
+
+
+
+  //-----------------------------------------------------------------
   const [esMenorEdad, setEsMenorEdad] = useState('NO'); // Puedes inicializarlo según tus necesidades
   //Linea5
   const [parentezcoCliente, setparentezcoCliente] = useState('')
@@ -40,10 +55,12 @@ const Cliente = () => {
 
   useEffect(() => {
     getData();
-    fetch('/api/clientes')
-      .then(response => response.text())
-      .catch(error => console.error('Error fetching clientes:', error));
+    obtenerPaises();
+    fetchClientes();
+
   }, []);
+
+  // Limpiar campos del formulario
 
   const cleanData = () => {
     setClientes('')
@@ -51,20 +68,16 @@ const Cliente = () => {
     setnombre2Cliente('')
     setapellido1Cliente('')
     setapellido2Cliente('')
-
     settipodocumentoCliente('')
     setdocumentoCliente('')
     setfechanacimientoCliente('');
     setcorreoelectronicoCliente('')
-
     settelefono1Cliente('')
     settelefono2Cliente('')
     setdireccionCliente('')
-
-    setpaisCliente('');
-    setestadoCliente('');
-    setciudadCliente('');
-
+    setPaisCliente('');
+    setEstadoCliente('');
+    setCiudadCliente('');
     setparentezcoCliente('')
     setOtroParentezco('')
     setdocumentoTitular('')
@@ -76,6 +89,8 @@ const Cliente = () => {
     const { data } = await axios.get("http://localhost:4000/api/clientes/");
     setClientes(data.clientes);
   };
+
+  // Guardar valores del formulario
 
   const saveCliente = async () => {
     try {
@@ -110,7 +125,7 @@ const Cliente = () => {
       // SweetAlert2 para mostrar éxito
       Swal.fire({
         icon: 'success',
-        title: response.data.message,
+        title: 'El Cliente a sido registrado con exito',
         showConfirmButton: false,
         timer: 1500
       });
@@ -129,6 +144,8 @@ const Cliente = () => {
     }
   }
 
+  // Actualziar cliente registrado
+
   const updateUser = async () => {
     try {
       const id = localStorage.getItem('id');
@@ -137,26 +154,24 @@ const Cliente = () => {
         nombre2Cliente,
         apellido1Cliente,
         apellido2Cliente,
-
         tipodocumentoCliente,
         documentoCliente,
         fechanacimientoCliente,
         correoelectronicoCliente,
-
         telefono1Cliente,
         telefono2Cliente,
         direccionCliente,
-
         paisCliente,
         estadoCliente,
         ciudadCliente,
-
         parentezcoCliente,
         otroParentezco,
         documentoTitular: documentoTitular  // Usa el valor validado
       };
 
-      const { data } = await axios.put('http://localhost:4000/api/clientes/' + id,newCliente);
+      const { data } = await axios.put('http://localhost:4000/api/clientes/' + id, newCliente);
+      // Actualizar el estado de fechanacimientoCliente si es necesario
+      setfechanacimientoCliente(newCliente.fechanacimientoCliente); // Asegúrate de que esto actualice el estado correctamente
       cleanData();
       getData();
       // SweetAlert2 para mostrar éxito
@@ -174,14 +189,8 @@ const Cliente = () => {
     }
   }
 
+  // Sirve para almacenar los campos editables antes de guardar
 
-  const actions = async (e) => {
-    e.preventDefault();
-    edit ? updateUser() : saveCliente();
-  };
-
-
-  
   const editData = (item) => {
 
     setEdit(true);
@@ -189,20 +198,16 @@ const Cliente = () => {
     setnombre2Cliente(item.nombre2Cliente)
     setapellido1Cliente(item.apellido1Cliente)
     setapellido2Cliente(item.apellido2Cliente)
-
     settipodocumentoCliente(item.tipodocumentoCliente)
     setdocumentoCliente(item.documentoCliente)
     setfechanacimientoCliente(item.fechanacimientoCliente);
     setcorreoelectronicoCliente(item.correoelectronicoCliente)
-
     settelefono1Cliente(item.telefono1Cliente)
     settelefono2Cliente(item.telefono2Cliente)
     setdireccionCliente(item.direccionCliente)
-
-    setpaisCliente(item.paisCliente);
-    setestadoCliente(item.estadoCliente);
-    setciudadCliente(item.ciudadCliente);
-
+    setPaisCliente(item.paisCliente);
+    setEstadoCliente(item.estadoCliente);
+    setCiudadCliente(item.ciudadCliente);
     setparentezcoCliente(item.parentezcoCliente)
     setOtroParentezco(item.Otroparentezco)
     setdocumentoTitular(item.documentoTitular)
@@ -215,7 +220,7 @@ const Cliente = () => {
     setIsModalOpen(false);
   };
 
-
+  // Elimina el cliente por Id
 
   const deleteCliente = async (id) => {
     try {
@@ -247,14 +252,25 @@ const Cliente = () => {
     }
   }
 
+  // Esta funcion permite cambiar el estado del formulario si es nuevo se guarda si ya existe se actualiza
+
+  const actions = async (e) => {
+    e.preventDefault();
+    edit ? updateUser() : saveCliente();
+  };
+
+  // Esta funcion permite selccionar la opcion de menor edad y asi mostrar los imput correspondientes
+
   const handleEsMenorEdadChange = (e) => {
     setEsMenorEdad(e.target.value);
   };
 
 
+  // Esta funcion permite validar la fecha de nacimiento, esta no puede ser mayor a la fecha actual.
+
   const handleFechaChange = (e) => {
-    const selectedDate = new Date(e.target.value);
-    const currentDate = new Date();
+    const selectedDate = DateTime.fromISO(e.target.value);
+    const currentDate = DateTime.now();
 
     if (selectedDate > currentDate) {
       setFechaError('La fecha no puede ser futura.');
@@ -265,6 +281,12 @@ const Cliente = () => {
     setfechanacimientoCliente(e.target.value);
   };
 
+  // Esta funcion da el formato de fecha de luxon https://moment.github.io/luxon
+
+  const formattedDate = DateTime.fromISO(fechanacimientoCliente).toFormat('yyyy-MM-dd');
+
+  //Esta funcion permite que al seleccionar la opcion Otro en la listaa de parentesco, se muestre el input de otro
+
   const handleParentezcoChange = (e) => {
     const selectedValue = e.target.value;
     setparentezcoCliente(selectedValue);
@@ -274,6 +296,16 @@ const Cliente = () => {
       setOtroParentezcoVisible(false);
     }
   };
+
+  // Esta funcion permite hacer una consulta Get al servidor buscando un id de cliente
+
+  const fetchClientes = async () => {
+    fetch('/api/clientes')
+      .then(response => response.text())
+      .catch(error => console.error('Error fetching clientes:', error));
+  };
+
+  // Este codigo valida si el documento del Titular exite en la base de datos de Clientes
 
   const handleDocumentoTitularChange = async (e) => {
     const value = e.target.value;
@@ -294,6 +326,82 @@ const Cliente = () => {
       setNombreCompleto('');
     }
   };
+
+
+
+  // Mostrar todos los paises existentes en el Backend
+  const obtenerPaises = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/api/paises/listall");
+      console.log("Lista de paises:", response);
+      setPaises(response.data.paises);
+    } catch (error) {
+      console.error("Error al obtener la lista de países:", error);
+    }
+  };
+
+  //Mostrar un pais por id con su lista de estados
+  const obtenerEstadosPorPais = async (paisId) => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/paises/listid/${paisId}`);
+      setEstados(response.data.estados || []);
+    } catch (error) {
+      console.error("Error al obtener los estados por país:", error);
+      setEstados([]);
+    }
+  };
+
+  //Mostrar las ciudaddes de un estado seleccionado
+  const obtenerCiudadesPorEstado = async (estadoId) => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/estados/listid/${estadoId}`);
+      setCiudades(response.data.ciudades || []);
+
+    } catch (error) {
+      console.error("Error al obtener las ciudades por estado", error);
+      setCiudades([]);
+
+    }
+  };
+
+
+  const handlePaisChange = async (event) => {
+    const paisId = event.target.value;
+    setPaisSeleccionado(paisId);
+
+    if (paisId) {
+      await obtenerEstadosPorPais(paisId);
+      setEstadoSeleccionado(""); // Limpiar el estado seleccionado al cambiar de país
+    } else {
+      setEstados([]);
+      setEstadoSeleccionado("");
+      setCiudades([]);
+    }
+  };
+
+  const handleEstadoChange = async (event) => {
+    const estadoId = event.target.value;
+    setEstadoSeleccionado(estadoId);
+
+    if (estadoId) {
+      await obtenerCiudadesPorEstado(estadoId);
+      setCiudadSeleccionada(""); // Limpiar la ciudad seleccionada al cambiar de estado
+    } else {
+      setCiudades([]);
+      setCiudadSeleccionada("");
+    }
+  };
+
+  const handleCiudadChange = async (event) => {
+    const ciudadId = event.target.value;
+    setCiudadSeleccionada(ciudadId);
+
+    if (!ciudadId) {
+      // Si no se seleccionó una ciudad, limpiar la selección de ciudad
+      setCiudadSeleccionada("");
+    }
+  };
+
 
   return (
     <div>
@@ -379,7 +487,7 @@ const Cliente = () => {
                         type="date"
                         className="form-control"
                         id="fechaNacimiento"
-                        value={fechanacimientoCliente}
+                        value={formattedDate}
                         onChange={handleFechaChange}
                         required
                       />
@@ -412,28 +520,76 @@ const Cliente = () => {
                       <input type="text" className="form-control" id="direccionPrincipal"
                         value={direccionCliente}
                         onChange={(e) => setdireccionCliente(e.target.value.toUpperCase())}
+                        required
                       />
                       <div className="invalid-feedback">Proporciona una dirección válida.</div>
                     </div>
-
                     <div className="col-md-3">
                       <label htmlFor="pais" className="form-label">Pais</label>
-                      <input type="text" className="form-control" id="pais"
-                        value={paisCliente}
-                        onChange={(e) => setpaisCliente(e.target.value)} />
+                      {paises.length > 0 ? (
+                        <select
+                          className="form-select"
+                          id="pais"
+                          value={paisSeleccionado}
+                          onChange={handlePaisChange}>
+                          <option value="">Seleccione país</option> {/* Opción predeterminada */}
+                          {paises.map((paises) => (
+                            <option key={paises.idPais} value={paises.idPais}>
+                              {paises.nombrePais}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p>Cargando países...</p>
+                      )}
+                    </div>
+                    <div className="col-md-3">
+                      <label htmlFor="estado" className="form-label">Estado/Departamento</label>
+                      {estados.length > 0 && (
+                        <select
+                          className="form-select"
+                          value={estadoSeleccionado}
+                          onChange={handleEstadoChange}
+                        >
+                          <option value="">Seleccione el estado</option>
+                          {estados.map((estado) => (
+                            <option key={estado._id} value={estado._id}>
+                              {estado.nombreEstado}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <div className="col-md-3">
+                      <label htmlFor="ciudad" className="form-label">Ciudad</label>
+                      {ciudades.length > 0 && (
+                        <select
+                          className="form-select"
+                          id="ciudad"
+                          value={ciudadSeleccionada}
+                          onChange={handleCiudadChange}
+                        >
+                          <option value="">Seleccione la ciudad</option> {/* Opción predeterminada */}
+                          {ciudades.map((ciudad) => (
+                            <option key={ciudad._id} value={ciudad._id}>
+                              {ciudad.nombreCiudad}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
 
-                    <div className="col-md-3">
-                      <label htmlFor="departamento" className="form-label">Departamento</label>
-                      <input type="text" className="form-control" id="departamento" value={estadoCliente}
-                        onChange={(e) => setestadoCliente(e.target.value)} />
-                    </div>
 
-                    <div className="col-md-3">
-                      <label htmlFor="municipio" className="form-label">Municipio/Ciudad</label>
-                      <input type="text" className="form-control" id="municipio" value={ciudadCliente}
-                        onChange={(e) => setciudadCliente(e.target.value)} />
-                    </div>
+
+
+
+
+
+
+
+
+
+
 
 
                     {/* ... (código existente) ... */}
@@ -448,7 +604,7 @@ const Cliente = () => {
                     </div>
                     {esMenorEdad === 'SI' && (
                       <>
-                        <div className="col-md-3">
+                        <div className="col-md-3 mb-3">
                           <label htmlFor="parentezco" className="form-label">Parentesco (si es menor de edad)</label>
                           <select className="form-select" id="parentezco" value={parentezcoCliente} onChange={handleParentezcoChange} required>
                             <option defaultValue disabled value="">Elige...</option>
@@ -473,7 +629,7 @@ const Cliente = () => {
                             />
                           </div>
                         )}
-                        <div className="col-md-3">
+                        <div className="col-md-3 mb-3">
                           <label htmlFor="documentoTitular" className="form-label">Documento del Responsable</label>
                           <input
                             type="text"
@@ -501,23 +657,24 @@ const Cliente = () => {
                       </>
                     )}
                     {/* ... (código existente) ... */}
-                  </div>
-                  <div className="modal-footer border-5">
-                    <button
-                      type="button"
-                      className="btn btn-danger"
-                      onClick={() => {
-                        cleanData(); // Limpia los campos del formulario
-                        getData(); // Carga los datos actualizados
-                        closeModal();
-                        setFechaError(''); // Restablece el mensaje de error
-                        document.getElementById("clienteForm").click(); // Cierra el modal
-                      }}
-                      data-bs-dismiss="modal"
-                    >
-                      Cerrar
-                    </button>
-                    <button type="submit" className="btn btn-primary">Guardar Registro</button>
+
+                    <div className="modal-footer border-5">
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => {
+                          getData(); // Carga los datos actualizados
+                          cleanData(); // Limpia los campos del formulario
+                          closeModal();
+                          setFechaError(''); // Restablece el mensaje de error
+                          document.getElementById("clienteForm").click(); // Cierra el modal
+                        }}
+                        data-bs-dismiss="modal"
+                      >
+                        Cerrar
+                      </button>
+                      <button type="submit" className="btn btn-primary">Guardar Registro</button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -525,7 +682,7 @@ const Cliente = () => {
           </div>
         </div>
 
-      </div>
+      </div >
       {/* Fin del formulario*/}
 
       {/* Inicio de la tabla de Clientes*/}
@@ -543,17 +700,10 @@ const Cliente = () => {
                 <th scope="col">Apellido2</th>
                 <th scope="col">Tipo</th>
                 <th scope="col">Documento</th>
-                {/*<th scope="col">Fecha Nacimiento</th>*/}
                 <th scope="col">Email</th>
                 <th scope="col">Telefono1</th>
-                <th scope="col">Telefono2</th>
-                {/*<th scope="col">Direccion</th>
-                <th scope="col">Pais</th>
-                <th scope="col">Dpto</th>
-                    <th scope="col">ciudad</th>
-                <th scope="col">Parentesco</th>
-                    <th scope="col">Otro Parentesco</th>*/}
                 <th scope="col">Titular</th>
+                <th scope="col">F Nacimiento</th>
                 <th scope="col">Acciones</th>
               </tr>
             </thead>
@@ -565,48 +715,29 @@ const Cliente = () => {
                   <td>{item.nombre2Cliente}</td>
                   <td>{item.apellido1Cliente}</td>
                   <td>{item.apellido2Cliente}</td>
-
                   <td>{item.tipodocumentoCliente}</td>
                   <td>{item.documentoCliente}</td>
-                  {/*td>{item.fechanacimientoCliente}</td>*/}
                   <td>{item.correoelectronicoCliente}</td>
-
                   <td>{item.telefono1Cliente}</td>
-                  <td>{item.telefono2Cliente}</td>
-                  {/*<td>{item.direccionCliente}</td>*/}
-
-                  {/*<td>{item.paisCliente}</td>
-                  <td>{item.estadoCliente}</td>
-              <td>{item.ciudadCliente}</td>*/}
-
-                  {/*<td>{item.parentezcoCliente}</td>
-                  <td>{item.otroParentezco}</td>*/}
                   <td>{item.documentoTitular}</td>
+                  <td>{item.fechanacimientoCliente}</td>
+                  <td>{item.fechanacimientoCliente}</td>
+                  
 
                   <td>
-
                     <div className="btn-group btn-group-sm" role="group">
-
                       <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}>
                         <i className="fa-solid fa-pencil space-i"></i>
                       </span>
-
-
-
-
-
-
                       <span className='btn btn-danger d-flex align-items-center'
                         onClick={() => deleteCliente(item._id)}
                       >
                         <i className="fa-solid fa-trash"></i>
                       </span>
                     </div>
-
                   </td>
                 </tr>
               ))}
-
             </tbody>
           </table>
         </div>
@@ -647,7 +778,7 @@ const Cliente = () => {
       </div>
       {/* Fin de la tabla de Clientes*/}
 
-    </div>
+    </div >
   )
 }
 

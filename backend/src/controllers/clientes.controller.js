@@ -124,7 +124,7 @@ clientesCtrl.update = async (req, res) => {
 
         const tipodocumentoCliente = req.body.tipodocumentoCliente || cliente.tipodocumentoCliente
         const documentoCliente = req.body.documentoCliente || cliente.documentoCliente
-        const fechanacimientoCliente = req.body.fechanaciminetoCliente || cliente.fechanacimientoCliente
+        const fechanacimientoCliente = req.body.fechanacimientoCliente || cliente.fechanacimientoCliente
         const correoelectronicoCliente = req.body.correoelectronicoCliente || cliente.correoelectronicoCliente
 
         const telefono1Cliente = req.body.telefono1Cliente || cliente.telefono1Cliente
@@ -140,6 +140,8 @@ clientesCtrl.update = async (req, res) => {
         const ciudadCliente = req.body.ciudadCliente || cliente.ciudadCliente
 
 
+
+        
 
         const clienteUpdate = {
             nombre1Cliente, 

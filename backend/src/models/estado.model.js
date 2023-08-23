@@ -13,17 +13,15 @@ const estadosSchema = new Schema({
     type: Number,
     required: true
   },
-  // referencia hibrida
+  // referencia híbrida
   paisObjectId: {
     type: Schema.Types.ObjectId,
     ref: 'Paises' // Referencia al modelo de Paises
   },
   ciudades: [{
     type: Schema.Types.ObjectId,
-    ref: 'Ciudades'
-}]
-
-
+    ref: 'ciudades' // Referencia al modelo de Ciudades
+  }]
 }, {
   timestamps: true,
 });

@@ -1,11 +1,10 @@
 const { Schema, model } = require('mongoose');
 
 const ciudadSchema = new Schema({
-  idCiudad:{
-    type:Number,
+  idCiudad: {
+    type: Number,
     required: true
   },
-
   nombreCiudad: {
     type: String,
     required: true
@@ -14,12 +13,11 @@ const ciudadSchema = new Schema({
     type: Number,
     required: true
   },
-  // referencia hibrida
+  // referencia híbrida
   estadoObjectId: {
     type: Schema.Types.ObjectId,
-    ref: 'Estado' // Referencia al modelo de Estado
+    ref: 'Estados' // Referencia al modelo de Estados
   }
-
 });
 
 module.exports = model('ciudades', ciudadSchema);
