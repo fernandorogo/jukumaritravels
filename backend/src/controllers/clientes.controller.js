@@ -3,7 +3,14 @@ const clientesModel = require('../models/clientes.model')
 
 clientesCtrl.list = async (req, res) => {
     try {
-        const clientes = await clientesModel.find()
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const options = {
+            limit,
+            page,
+        };
+        //const clientes = await clientesModel.find()
+        const clientes = await clientesModel.paginate({}, options)
         res.json({
             ok: true,
             clientes
@@ -43,17 +50,17 @@ clientesCtrl.listid = async (req, res) => {
 
 clientesCtrl.add = async (req, res) => {
     try {
-        const { 
-            nombre1Cliente, 
-            nombre2Cliente, 
-            apellido1Cliente, 
-            apellido2Cliente, 
-            tipodocumentoCliente, 
-            documentoCliente, 
+        const {
+            nombre1Cliente,
+            nombre2Cliente,
+            apellido1Cliente,
+            apellido2Cliente,
+            tipodocumentoCliente,
+            documentoCliente,
             fechanacimientoCliente,
-            correoelectronicoCliente, 
-            telefono1Cliente, 
-            telefono2Cliente,  
+            correoelectronicoCliente,
+            telefono1Cliente,
+            telefono2Cliente,
             direccionCliente,
             paisCliente,
             estadoCliente,
@@ -71,16 +78,16 @@ clientesCtrl.add = async (req, res) => {
         }
 
         const newCliente = new clientesModel({
-            nombre1Cliente, 
-            nombre2Cliente, 
-            apellido1Cliente, 
-            apellido2Cliente, 
-            tipodocumentoCliente, 
-            documentoCliente, 
+            nombre1Cliente,
+            nombre2Cliente,
+            apellido1Cliente,
+            apellido2Cliente,
+            tipodocumentoCliente,
+            documentoCliente,
             fechanacimientoCliente,
-            correoelectronicoCliente, 
-            telefono1Cliente, 
-            telefono2Cliente,  
+            correoelectronicoCliente,
+            telefono1Cliente,
+            telefono2Cliente,
             direccionCliente,
             paisCliente,
             estadoCliente,
@@ -134,26 +141,26 @@ clientesCtrl.update = async (req, res) => {
         const parentezcoCliente = req.body.parentezcoCliente || cliente.parentezcoCliente
         const otroParentezco = req.body.otroParentezco || cliente.otroParentezco
         const documentoTitular = req.body.documentoTitular || cliente.documentoTitular
-        
+
         const paisCliente = req.body.paisCliente || cliente.paisCliente
         const estadoCliente = req.body.estadoCliente || cliente.estadoCliente
         const ciudadCliente = req.body.ciudadCliente || cliente.ciudadCliente
 
 
 
-        
+
 
         const clienteUpdate = {
-            nombre1Cliente, 
-            nombre2Cliente, 
-            apellido1Cliente, 
-            apellido2Cliente, 
-            tipodocumentoCliente, 
-            documentoCliente, 
+            nombre1Cliente,
+            nombre2Cliente,
+            apellido1Cliente,
+            apellido2Cliente,
+            tipodocumentoCliente,
+            documentoCliente,
             fechanacimientoCliente,
-            correoelectronicoCliente, 
-            telefono1Cliente, 
-            telefono2Cliente,  
+            correoelectronicoCliente,
+            telefono1Cliente,
+            telefono2Cliente,
             direccionCliente,
             paisCliente,
             estadoCliente,
@@ -206,24 +213,24 @@ clientesCtrl.delete = async (req, res) => {
 
 clientesCtrl.verificarDocumento = async (req, res) => {
     try {
-      const documento = req.params.documento;
-  
-      // Buscar un cliente por su número de documento en la base de datos
-      const clienteEncontrado = await clientesModel.findOne({ documentoCliente: documento });
-  
-      // Enviar respuesta al frontend si el cliente fue encontrado o no
-      if (clienteEncontrado) {
-        const nombreCompleto = `${clienteEncontrado.nombre1Cliente} ${clienteEncontrado.nombre2Cliente} ${clienteEncontrado.apellido1Cliente} ${clienteEncontrado.apellido2Cliente}`;
-        res.json({ exists: true, nombreCompleto }); // Cliente encontrado
-      } else {
-        res.json({ exists: false }); // Cliente no encontrado
-      }
+        const documento = req.params.documento;
+
+        // Buscar un cliente por su número de documento en la base de datos
+        const clienteEncontrado = await clientesModel.findOne({ documentoCliente: documento });
+
+        // Enviar respuesta al frontend si el cliente fue encontrado o no
+        if (clienteEncontrado) {
+            const nombreCompleto = `${clienteEncontrado.nombre1Cliente} ${clienteEncontrado.nombre2Cliente} ${clienteEncontrado.apellido1Cliente} ${clienteEncontrado.apellido2Cliente}`;
+            res.json({ exists: true, nombreCompleto }); // Cliente encontrado
+        } else {
+            res.json({ exists: false }); // Cliente no encontrado
+        }
     } catch (error) {
-      console.error('Error al verificar el documento:', error);
-      res.status(500).json({ error: 'Error al verificar el documento' });
+        console.error('Error al verificar el documento:', error);
+        res.status(500).json({ error: 'Error al verificar el documento' });
     }
-  };
-  
-  
+};
+
+
 
 module.exports = clientesCtrl;

@@ -1,23 +1,24 @@
 const { Schema, model } = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const clienteSchema = new Schema({
     nombre1Cliente: {
         type: String,
         required: true,
-        maxlength: 20
+        maxlength: 15
     },
     nombre2Cliente: {
         type: String,
-        maxlength: 20
+        maxlength: 15
     },
     apellido1Cliente: {
         type: String,
         required: true,
-        maxlength: 20
+        maxlength: 15
     },
     apellido2Cliente: {
         type: String,
-        maxlength: 20
+        maxlength: 15
     },
     tipodocumentoCliente: {
         type: String,
@@ -99,6 +100,8 @@ clienteSchema.pre('save', function (next) {
     // ...otras validaciones si es necesario
     next();
 });
+
+clienteSchema.plugin(mongoosePaginate);
 
 module.exports = model('clientes', clienteSchema)
 
