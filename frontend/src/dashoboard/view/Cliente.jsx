@@ -2,6 +2,7 @@ import axios from 'axios';
 import { DateTime } from 'luxon';
 import Pagination from 'rc-pagination';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import "./TextResponsive.css";
 
@@ -47,9 +48,13 @@ const Cliente = () => {
   //Bandera
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  // Paginacion
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState('')
+  //Search
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]); // Aquí almacenarás los clientes filtrados
+
 
   useEffect(() => {
     getData(page);
@@ -91,6 +96,7 @@ const Cliente = () => {
   const getData = async (pageCurrent) => {
     const { data } = await axios.get(`/api/clientes/list/?page=${pageCurrent}`);
     setClientes(data.clientes.docs);
+    setFilteredClientes(data.clientes.docs);
     setPage(data.clientes.page);
     setTotalPages(data.clientes.totalPages);
   };
@@ -127,7 +133,7 @@ const Cliente = () => {
         documentoTitular: documentoTitular  // Usa el valor validado
 
       }
-      const response = await axios.post('/api/clientes/', newCliente);
+      await axios.post('/api/clientes/', newCliente);
       cleanData();
       getData();
 
@@ -239,7 +245,6 @@ const Cliente = () => {
   // Función para cerrar el modal de edición
   const closeModal = () => {
     setIsModalOpen(false);
-
   };
 
   // Elimina el cliente por Id
@@ -402,17 +407,58 @@ const Cliente = () => {
   };
 
 
+  //Mi filtro
+  const searchFields = [
+    'nombre1Cliente',
+    'nombre2Cliente',
+    'apellido1Cliente',
+    'apellido2Cliente',
+    'documentoCliente',
+    'fechanacimientoCliente',
+    'correoelectronicoCliente',
+
+    // Agrega más campos aquí
+  ];
+
+  const handleSearch = (event) => {
+    const searchText = event.target.value;
+    setSearchTerm(searchText);
+
+    // Filtra los clientes en base a los campos de búsqueda definidos
+    const filtered = clientes.filter((cliente) =>
+      searchFields.some((field) =>
+        String(cliente[field]).toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+
+    setFilteredClientes(filtered);
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
 
-        <button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} onClick={() => {
+        {/*<button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} onClick={() => {
           setIsModalOpen(true); // Abre la modal al hacer clic
         }}>
           < i className="fa-solid fa-plus fa-beat fa-lg me-2" style={{ color: "#ffffff" }}></i>CLIENTES
-        </button>
+      </button>*/}
 
         {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"> */}
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -528,7 +574,7 @@ const Cliente = () => {
                     {/*Aqui inicia los select de Ciudad, Estado y Pais */}
                     <div className="col-md-3">
                       <label htmlFor="direccionPrincipal" className="form-label">Pais</label>
-                      <select className="form-select" value={paisSeleccionado} onChange={(e) => handlePaisChange(e.target.value)}>
+                      <select className="form-select" value={edit ? paisCliente : paisSeleccionado} onChange={(e) => handlePaisChange(e.target.value)}>
                         <option value="">Selecciona un país</option>
                         {paises.map((paises) => (
                           <option key={paises.idPais} value={paises.idPais}>{paises.nombrePais}</option>
@@ -537,7 +583,7 @@ const Cliente = () => {
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="direccionPrincipal" className="form-label">Estado</label>
-                      <select className="form-select" value={estadoSeleccionado} onChange={(e) => handleEstadoChange(e.target.value)}>
+                      <select className="form-select" value={edit ? estadoCliente : estadoSeleccionado} onChange={(e) => handleEstadoChange(e.target.value)}>
                         <option value="">Selecciona un estado</option>
                         {estados.map((estados) => (
                           <option key={estados.idEstado} value={estados.idEstado}>{estados.nombreEstado}</option>
@@ -546,13 +592,12 @@ const Cliente = () => {
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="direccionPrincipal" className="form-label">Ciudad</label>
-                      <select className="form-select" value={ciudadSeleccionada} onChange={(e) => handleCiudadChange(e.target.value)}>
+                      <select className="form-select" value={edit ? ciudadCliente : ciudadSeleccionada} onChange={(e) => handleCiudadChange(e.target.value)}>
                         <option value="">Selecciona una ciudad</option>
                         {ciudades.map((ciudades) => (
                           <option key={ciudades.idCiudad} value={ciudades.idCiudad}>{ciudades.nombreCiudad}</option>
                         ))}
                       </select>
-
                     </div>
 
 
@@ -654,7 +699,39 @@ const Cliente = () => {
       {/* Inicio de la tabla de Clientes*/}
       <div className='container container-flex card Larger shadow mt-3'>
         <div className="card-header d-flex justify-content-between align-items-center">
-          <h6 className="text-primary fw-bold m-0 mt-1">Lista de Clientes</h6>
+          <div className="dropdown no-arrow align-items-center">
+            <button className="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button">
+              <i className="fas fa-ellipsis-v text-gray-400"></i>
+            </button>
+            <div className="dropdown-menu shadow dropdown-menu-end animated--fade-in">
+              <p className="text-center dropdown-header">Exportar:</p>
+              <Link className="dropdown-item" href="#">
+                <i class="fa-solid fa-file-pdf me-2"></i>Pdf
+              </Link>
+              <Link className="dropdown-item" href="#">
+                <i class="fa-solid fa-file-excel me-2"></i> Excel
+              </Link>
+              <div className="dropdown-divider"></div><Link className="dropdown-item" href="#"> Somem</Link>
+            </div>
+          </div>
+          <div>
+            <h6 className="text-primary fw-bold m-0 mt-1 text-start">Lista de Clientes</h6>
+          </div>
+          
+          <div>
+            <input className="form-control me-5" aria-label="Search"
+              type="text"
+              placeholder="Buscar cliente..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+          <div>
+            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} onClick={() => {
+              setIsModalOpen(true); // Abre la modal al hacer clic
+            }} title="Haga clic para agregar un nuevo cliente">< i className="fa-solid fa-plus fa-beat "></i></button>
+          </div>
+
         </div>
         {/* Mostrar tabla solo en dispositivos grandes (computadoras) */}
         <div className='d-none d-md-block'>
@@ -678,7 +755,7 @@ const Cliente = () => {
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(clientes) && clientes.map((item, i) => (
+                {Array.isArray(filteredClientes) && filteredClientes.map((item, i) => (
                   <tr key={item._id}>
                     <td className="responsive-text">{i + 1}</td>
                     <td className="responsive-text">{item.nombre1Cliente}</td>
@@ -748,18 +825,18 @@ const Cliente = () => {
           ))}
         </div>
         <div className="my-1 d-flex justify-content-end mb-3 border-5">
-            <Pagination
+          <Pagination
             className='pagination'
             current={page}
             total={totalPages}
             pageSize={1}
             onChange={onchangePage}
-            />
-          </div>
+          />
+        </div>
       </div>
-      
+
       {/* Fin de la tabla de Clientes*/}
-      
+
 
 
 
