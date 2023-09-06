@@ -3,7 +3,15 @@ const destinosModel = require('../models/destinos.model')
 
 destinosCtrl.list = async (req, res) => {
     try {
-        const destinos = await destinosModel.find().populate("categoriadestinos");
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const options = {
+            limit,
+            page,
+        };
+
+        //const destinos = await destinosModel.find().populate("categoriadestinos");}
+        const destinos = await destinosModel.paginate({}, options)
         res.json({
             ok: true,
             destinos
@@ -41,6 +49,18 @@ destinosCtrl.listid = async (req, res) => {
 destinosCtrl.add = async (req, res) => {
     try {
         const { nombreDestino, ubicacion, descripcionDestino, categoriadestinos } = req.body
+
+        const verificar = await destinosModel.findOne({ nombreDestino });
+        if (verificar) {
+            return res.status(400).json({
+                ok: false,
+                message: "El nombre del destino ya se encuentra registrado"
+            })
+        }
+
+
+
+
         const newDestino = new destinosModel({
             nombreDestino,
             ubicacion,

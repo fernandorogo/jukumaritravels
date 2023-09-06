@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const proveedorSchema = new Schema({
     tipodocumentoProveedor: {
@@ -44,7 +45,7 @@ const proveedorSchema = new Schema({
     },
     whatsappProveedor: {
         type: Number,
-        required: true
+        
 
     },
     correoelectronicoProveedor: {
@@ -54,7 +55,7 @@ const proveedorSchema = new Schema({
     },
     pais: {
         type: String,
-        required: true
+      
     },
     departamento: {
         type: String
@@ -64,7 +65,7 @@ const proveedorSchema = new Schema({
     },
     direccion: {
         type: String,
-        required: true
+       
     }
 
 
@@ -73,6 +74,7 @@ const proveedorSchema = new Schema({
         timestamps: true,
     }
 );
+proveedorSchema.plugin(mongoosePaginate);
 
 module.exports = model('proveedores', proveedorSchema)
 

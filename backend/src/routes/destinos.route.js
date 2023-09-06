@@ -2,7 +2,7 @@ const { Router } = require('express')
 const route = Router()
 const destinosCtrl = require('../controllers/destinos.controller')
 
-route.get('/', destinosCtrl.list);
+route.get('/list', destinosCtrl.list);
 route.get('/:id', destinosCtrl.listid);
 route.post('/', destinosCtrl.add);
 route.put('/:id', destinosCtrl.update);

@@ -2,7 +2,7 @@ const { Router } = require('express')
 const route = Router()
 const paquetesturisticosCtrl = require('../controllers/paquetesturisticos.controller')
 
-route.get('/', paquetesturisticosCtrl.list);
+route.get('/list', paquetesturisticosCtrl.list);
 route.get('/:id', paquetesturisticosCtrl.listid);
 route.post('/', paquetesturisticosCtrl.add);
 route.put('/:id', paquetesturisticosCtrl.update);

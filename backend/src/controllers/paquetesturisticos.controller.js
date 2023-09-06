@@ -3,7 +3,15 @@ const paquetesturisticosModel = require('../models/paquetesturisticos.model')
 
 paquetesturisticosCtrl.list = async (req, res) => {
     try {
-        const paquetesturisticos = await paquetesturisticosModel.find().populate("destinos").populate("detallepaquete")
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const options = {
+            limit,
+            page,
+        };
+
+        // const paquetesturisticos = await paquetesturisticosModel.find().populate("destinos").populate("detallepaquete")
+        const paquetesturisticos = await paquetesturisticosModel.paginate({}, options)
         res.json({
             ok: true,
             paquetesturisticos

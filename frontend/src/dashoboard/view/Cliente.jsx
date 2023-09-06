@@ -430,37 +430,13 @@ const Cliente = () => {
         String(cliente[field]).toLowerCase().includes(searchText.toLowerCase())
       )
     );
-
     setFilteredClientes(filtered);
   };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   return (
     <div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
-
-        {/*<button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} onClick={() => {
-          setIsModalOpen(true); // Abre la modal al hacer clic
-        }}>
-          < i className="fa-solid fa-plus fa-beat fa-lg me-2" style={{ color: "#ffffff" }}></i>CLIENTES
-      </button>*/}
-
-        {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"> */}
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
           <div className="modal-dialog modal-xl">
             <div className="modal-content">
@@ -570,7 +546,6 @@ const Cliente = () => {
                       />
                       <div className="invalid-feedback">Proporciona una dirección válida.</div>
                     </div>
-
                     {/*Aqui inicia los select de Ciudad, Estado y Pais */}
                     <div className="col-md-3">
                       <label htmlFor="direccionPrincipal" className="form-label">Pais</label>
@@ -599,10 +574,6 @@ const Cliente = () => {
                         ))}
                       </select>
                     </div>
-
-
-
-
                     {/* ... (código existente) ... */}
                     <div className="col-md-3">
                       <label htmlFor="esMenorEdad" className="form-label">Es menor de edad</label>
@@ -668,7 +639,6 @@ const Cliente = () => {
                       </>
                     )}
                     {/* ... (código existente) ... */}
-
                     <div className="modal-footer border-5">
                       <button
                         type="button"
@@ -692,7 +662,6 @@ const Cliente = () => {
             </div>
           </div>
         </div>
-
       </div>
       {/* Fin del formulario*/}
 
@@ -706,10 +675,10 @@ const Cliente = () => {
             <div className="dropdown-menu shadow dropdown-menu-end animated--fade-in">
               <p className="text-center dropdown-header">Exportar:</p>
               <Link className="dropdown-item" href="#">
-                <i class="fa-solid fa-file-pdf me-2"></i>Pdf
+                <i className="fa-solid fa-file-pdf me-2"></i>Pdf
               </Link>
               <Link className="dropdown-item" href="#">
-                <i class="fa-solid fa-file-excel me-2"></i> Excel
+                <i className="fa-solid fa-file-excel me-2"></i> Excel
               </Link>
               <div className="dropdown-divider"></div><Link className="dropdown-item" href="#"> Somem</Link>
             </div>
@@ -717,7 +686,7 @@ const Cliente = () => {
           <div>
             <h6 className="text-primary fw-bold m-0 mt-1 text-start">Lista de Clientes</h6>
           </div>
-          
+
           <div>
             <input className="form-control me-5" aria-label="Search"
               type="text"
@@ -741,7 +710,7 @@ const Cliente = () => {
               <thead>
                 <tr style={{ background: "#008cba", color: "#ffffff" }}>
                   <th scope="col" className="responsive-text">#</th>
-                  <th scope="col-2" className="responsive-text">Nombre1</th>
+                  <th scope="col" className="responsive-text">Nombre1</th>
                   <th scope="col" className="responsive-text">Nombre2</th>
                   <th scope="col" className="responsive-text">Apellido1</th>
                   <th scope="col" className="responsive-text">Apellido2</th>
@@ -750,7 +719,6 @@ const Cliente = () => {
                   <th scope="col" className="responsive-text">Email</th>
                   <th scope="col" className="responsive-text">Telefono1</th>
                   <th scope="col" className="responsive-text">Titular</th>
-                  {/*<th scope="col">F Nacimiento</th>*/}
                   <th scope="col">Acciones</th>
                 </tr>
               </thead>
@@ -758,19 +726,15 @@ const Cliente = () => {
                 {Array.isArray(filteredClientes) && filteredClientes.map((item, i) => (
                   <tr key={item._id}>
                     <td className="responsive-text">{i + 1}</td>
-                    <td className="responsive-text">{item.nombre1Cliente}</td>
-                    <td className="responsive-text">{item.nombre2Cliente}</td>
-                    <td className="responsive-text">{item.apellido1Cliente}</td>
-                    <td className="responsive-text">{item.apellido2Cliente}</td>
+                    <td className="responsive-text text-truncate" style={{ maxWidth: "100px" }}>{item.nombre1Cliente}</td>
+                    <td className="responsive-text text-truncate" style={{ maxWidth: "100px" }}>{item.nombre2Cliente}</td>
+                    <td className="responsive-text text-truncate" style={{ maxWidth: "100px" }}>{item.apellido1Cliente}</td>
+                    <td className="responsive-text text-truncate" style={{ maxWidth: "100px" }}>{item.apellido2Cliente}</td>
                     <td className="responsive-text">{item.tipodocumentoCliente}</td>
                     <td className="responsive-text">{item.documentoCliente}</td>
-                    <td className="responsive-text">{item.correoelectronicoCliente}</td>
+                    <td className="responsive-text text-truncate" style={{ maxWidth: "150px" }}>{item.correoelectronicoCliente}</td>
                     <td className="responsive-text">{item.telefono1Cliente}</td>
                     <td className="responsive-text">{item.documentoTitular}</td>
-                    {/*<td>{DateTime.fromISO(item.fechanacimientoCliente).toFormat('dd/LL/yyyy')}</td>*/}
-
-
-
                     <td>
                       <div className="btn-group btn-group-sm" role="group">
                         <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}>
@@ -788,7 +752,6 @@ const Cliente = () => {
               </tbody>
             </table>
           </div>
-
         </div>
 
         {/* Mostrar tarjetas solo en dispositivos pequeños (móviles) */}
