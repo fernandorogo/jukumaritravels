@@ -1,22 +1,28 @@
 const { Schema, model } = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2') 
 
 const destinoSchema = new Schema({
-    Destino: {
+    nombreDestino: {
         type: String,
-        required: true
+        required: true,
+        maxlength: 20
 
     },
     ubicacion: {
         type: String,
+        required: true
     },
     descripcionDestino: {
-        type: String
+        type: String,
+        required: true
     },
-    categoriadestinos: [{ type: Schema.Types.ObjectId, ref: "categoriadestinos" }]
+    // categoriadestinos: [{ type: Schema.Types.ObjectId, ref: "categoriadestinos" }]
 },
     {
         timestamps: true,
     }
 );
 
-module.exports = model('destinos', destinoSchema) 
+destinoSchema.plugin(mongoosePaginate);
+
+module.exports = model('destinos', destinoSchema)

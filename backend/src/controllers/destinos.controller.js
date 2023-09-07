@@ -40,9 +40,9 @@ destinosCtrl.listid = async (req, res) => {
 }
 destinosCtrl.add = async (req, res) => {
     try {
-        const { Destino, ubicacion, descripcionDestino, categoriadestinos } = req.body
+        const { nombreDestino, ubicacion, descripcionDestino, categoriadestinos } = req.body
         const newDestino = new destinosModel({
-            Destino,
+            nombreDestino,
             ubicacion,
             descripcionDestino,
             categoriadestinos
@@ -72,13 +72,13 @@ destinosCtrl.update = async (req, res) => {
 
             })
         }
-        const Destino = req.body.Destino || destino.Destino
+        const nombreDestino = req.body.nombreDestino || destino.Destino
         const ubicacion = req.body.ubicacion || destino.ubicacion
         const descripcionDestino = req.body.descripcionDestino || destino.descripcionDestino
         const categoriadestinos = req.body.categoriadestinos || destino.categoriadestinos
 
         const destinoUpdate = {
-            Destino,
+            nombreDestino,
             ubicacion,
             descripcionDestino,
             categoriadestinos

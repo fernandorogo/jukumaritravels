@@ -1,14 +1,17 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import Swal from 'sweetalert2';
+import { DateTime } from 'luxon';
+import { Link } from 'react-router-dom';
 
 const Reservas = () => {
   const [reservas, setReservas] = useState([])
   const [fechaReserva, setFechaReserva] = useState('')
   const [fechaSalida, setFechaSalida] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
-  const [documentoCliente, setDocumentoCliente] = useState(''); // Estado para almacenar el documento del cliente
-  const [clienteInfo, setClienteInfo] = useState(null); // Estado para almacenar la información del cliente
+
+  const [edit, setEdit] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
 
@@ -21,7 +24,10 @@ const Reservas = () => {
     setFechaReserva('')
     setFechaSalida('')
     setFechaLlegada('')
-    setClienteInfo(null);
+    setEdit(false);
+
+  
+    
   }
 
   const getData = async () => {
@@ -35,12 +41,20 @@ const Reservas = () => {
         fechaReserva,
         fechaSalida,
         fechaLlegada,
-        clientes: clienteInfo ? clienteInfo._id : null, // Usar el ID del cliente si hay información
+       
 
       }
       await axios.post('http://localhost:4000/api/reservas/', newReserva);
       cleanData()
       getData();
+
+      // SweetAlert2 para mostrar éxito
+      Swal.fire({
+        icon: 'success',
+        title: 'La reserva se ha guardado exitosamente',
+        showConfirmButton: false,
+        timer: 1500
+      });
 
     } catch (error) {
       if (!error.response.data.ok) {
@@ -52,56 +66,61 @@ const Reservas = () => {
   }
   const actions = async (e) => {
     e.preventDefault();
-    saveReserva();
-  
-    // Realizar la consulta del cliente por documento
-    try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/${documentoCliente}`);
-      const data = response.data;
-  
-      if (data.ok) {
-        setClienteInfo(data.message); // Almacenar la información del cliente
-        saveReserva(); // Llamar a saveReserva después de obtener la información del cliente
-      } else {
-        console.error(data.message);
-      }
-    } catch (error) {
-      console.error('Error al consultar cliente:', error.message);
-    }
+    edit? updateReserva() : saveReserva();
+
+    
   };
   
-  
-  
-  
-  
-  //codigo nuevo para consultar cliente
-  const consultarCliente = async (documentoCliente) => {
-    try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/${documentoCliente}`);
-      const data = response.data;
-
-      if (data.ok) {
-        setClienteInfo(data.message);
-        saveReserva();
-      } else {
-        console.error(data.message);
-      }
-    } catch (error) {
-      console.error('Error al consultar cliente:', error.message);
-    }
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
+
+
+
+
   
+  const updateReserva = async () => {
+    try {
+      const id = localStorage.getItem('id');
+      const newReserva = {
+        fechaReserva,
+        fechaSalida,
+        fechaLlegada
+      }
 
+      const { data } = await axios.put('/api/reservas' + id, newReserva);
+      setFechaReserva(newReserva.fechaReserva);
+      cleanData();
+      getData();
+      closeModal();
 
-  const completeDataFields = (item) => {
+      // SweetAlert2 para mostrar éxito
+      Swal.fire({
+        icon: 'success',
+        title: data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
+      
+    } catch (error) {
+      if (!error.response.data.ok) {
+        return alert(error.response.data.message)
+      }
+      console.log('error en saveDestino', error.message);
+      
+    }
+  }
+  const editData = (item) => {
+    setEdit(true);
     setFechaReserva(item.fechaReserva)
     setFechaSalida(item.fechaSalida)
     setFechaLlegada(item.fechaLlegada)
-    localStorage.setItem('id', item._id)
 
+    localStorage.setItem('id', item._id);
+    setIsModalOpen(true);
   }
 
-
+  const formattedDate = DateTime.fromISO(fechaReserva).toFormat('yyyy-MM-dd');
 
   const deleteReserva = async (id) => {
     try {
@@ -114,6 +133,7 @@ const Reservas = () => {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Si, eliminar!'
       }).then(async (result) => {
+        
         if (result.isConfirmed) {
           const { data } = await axios.delete('http://localhost:4000/api/reservas/' + id);
           getData();
@@ -139,27 +159,24 @@ const Reservas = () => {
     <div>
 
       <div className='container-md mt-5'>
-
-
-        <button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} data-bs-toggle="modal" data-bs-target="#exampleModal">
-          < i className="fa-solid fa-plus fa-beat fa-lg me-2" style={{ color: "#ffffff" }}></i> RESERVA
-        </button>
-
-        {/*Inicio de formulario*/}
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
           <div className="modal-dialog modal-lg">
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header" style={{ backgroundColor: "#008cba" }}>
                   <h5 className="modal-title text-white" id="exampleModalLabel">Ingreso de Reservas</h5>
-                  <button type="button" className="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" className="btn-close bg-white" onClick={() => {
+                    cleanData();
+                    getData();
+                    closeModal();
+                  }}></button>
                 </div>
                 <div className="modal-body">
                   <form onSubmit={actions}>
                     <div className="col-md-12 mb-3">
                       <label htmlFor="validationCustom01" className="form-label">Fecha Reserva</label>
                       <input type="date" className="form-control" id="fechaReserva"
-                        value={fechaReserva} onChange={(e) => setFechaReserva(e.target.value.toUpperCase())} required />
+                        value={formattedDate} onChange={(e) => setFechaReserva(e.target.value.toUpperCase())} required />
                     </div>
                     <div className="col-md-12 mb-3">
                       <label htmlFor="fechaSalida" className="form-label">Fecha Salida</label>
@@ -171,7 +188,7 @@ const Reservas = () => {
                       <input type="date" className="form-control" id="fechaLlegada" value={fechaLlegada} onChange={(e) => setFechaLlegada(e.target.value.toUpperCase())} required />
 
                     </div>
-                    {/* Campo para ingresar el documento del cliente */}
+                    {/* Campo para ingresar el documento del cliente 
                     <div className="mb-3">
                       <label htmlFor="documentoCliente" className="form-label">Documento del Cliente</label>
                       <input
@@ -182,10 +199,10 @@ const Reservas = () => {
                         onChange={(e) => setDocumentoCliente(e.target.value)}
                         required
                       />
-                    </div>
+  </div>
                     <button type="button" className="btn btn-primary" onClick={consultarCliente}>Consultar Cliente</button>
 
-                    {/* ... Resto del formulario ... */}
+                     */}
 
 
 
@@ -201,55 +218,119 @@ const Reservas = () => {
           </div>
         </div>
 
-        <br></br>
-        <br></br>
+        <div className='container container-flex card larger shadow mt-3'>
+        <div className='card-header d-flex justify-content-between align-items-center'>
+          <div className="dropdown no-arrow align-items-center">
+            <button className="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button">
+              <i className='fas fa-ellipsis-v 
+            text-gray-400'></i>
+            </button>
+            <div className="dropdown-menu shadow dropdown-menu-end animated--fade-in">
+              <p className="text-center dropdown-header">Exportar:</p>
+              <Link className="dropdown-item" href="#">
+                <i className="fa-solid fa-file-pdf me-2"></i>Pdf
+              </Link>
+              <Link className="dropdown-item" href="#">
+                <i className="fa-solid fa-file-excel me-2"></i> Excel
+              </Link>
+              <div className="dropdown-divider"></div><Link className="dropdown-item" href="#"> Somem</Link>
+            </div>
+          </div>
 
-        <div className='container-md'>
-          <table className="table table-bordered border-dark table-hover">
-            <thead>
-              <tr style={{ background: "#008cba", color: "#ffffff" }}>
-                <th scope="col">#</th>
-                <th scope="col">Fecha Reserva</th>
-                <th scope="col">Fecha Salida</th>
-                <th scope="col">Fecha de Regreso</th>
-                <th scope='col'> Cliente</th>
-                <th scope="col">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(reservas) && reservas.map((item, i) => (
-                <tr key={item._id}>
-                  <td> {i + 1}</td>
-                  <td> {item.fechaReserva} </td>
-                  <td> {item.fechaSalida} </td>
-                  <td> {item.fechaLlegada} </td>
-                  <td> {item.cliente}</td>
+          <div>
+            <h6 className='text-primary fw-bold m-0 mt-1 text-start'> Lista de Reservas</h6>
+          </div>
+          <div>
+            <button type='button' className='btn btn-primary rounded-circle aling-end' style={{
+              backgroundColor: '#008cba'
+            }} onClick={() => { setIsModalOpen(true); }} title='Haga click para agregar un nuevo paquete'> <i className='fa-solid fa-plus fa-beat'></i></button>
 
-                  <td>
-                    <div className='d-flex justify-content-center'>
-
-                      <span className='btn btn-primary me-2  ' onClick={() => completeDataFields(item._id)}>
-                        <i className=" fa-solid fa-pencil space-i "></i>
-                      </span>
-
-
-                      <span className='btn btn-danger me-2  '
-                        onClick={() => deleteReserva(item._id)}
-                      ><i className="fa-solid fa-trash"></i></span>
-                    </div>
-
-
-                  </td>
-                </tr>))}
-
-            </tbody>
-          </table>
+          </div>
         </div>
+        <div className='d-none d-md-block'>
+          <div className='table-responsive'>
+            <table className='table table-bordered border-1 table-hover mt-2'>
+              <thead>
+                <tr style={{ background: '#008cba', color: '#ffffff' }}>
+                  <th scope='col'
+                    className='responsive-text'> # </th>
+                  <th scope='col'
+                    className='responsive-text'>Fecha Reserva</th>
+                  <th scope='col'
+                    className='responsive-text'>Fecha Salida</th>
+                  <th scope='col'
+                    className='responsive-text'> Fecha Llegada</th>
+                  <th scope='col'> Acciones </th>
+                </tr>
+
+              </thead>
+              <tbody>
+                {Array.isArray(reservas) && reservas.map((item, i) => (
+                  <tr key={item._id}>
+                  <td> {i + 1}</td>
+                  {<td className='responsive-text'>{DateTime.fromISO(item.fechaReserva).toFormat('dd/LL/yyyy')}</td>}
+                  {<td className='responsive-text'>{DateTime.fromISO(item.fechaSalida).toFormat('dd/LL/yyyy')}</td>}
+                  {<td className='responsive-text'> {DateTime.fromISO(item.fechaLlegada).toFormat('dd/LL/yyyy')}</td>}
+                 
+                  <td>
+                      <div className="btn-group btn-group-sm" role="group">
+                        <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}
+
+                        
+                        >
+                          <i className="fa-solid fa-pencil space-i" ></i>
+                        </span>
+                        <span className='btn btn-danger d-flex align-items-center'
+                          onClick={() => deleteReserva(item._id) } 
+                        >
+                          <i className="fa-solid fa-trash"></i>
+                        </span>
+                      </div>
+                    </td>
+                </tr>))}
+              
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+        {/*Mostar cards solo en dispositivos moviles */}
+        <div className='d-md-none'>
+          {Array.isArray(reservas) && reservas.map((item, i) => (
+            <div key={item._id} className='card border-3'>
+              <div className='card-body'>
+                <h5 className='card-title'> Reserva {i + 1} </h5>
+                <p className='card-text'>
+                  <strong> Fecha Reserva: </strong> {item.fechaReserva} <br />
+                  <strong> Fecha Salida: </strong> {item.fechaSalida} <br />
+                  <strong> Fecha Llegada</strong> {item.fechaLlegada}
+                </p>
+                <div className='btn-group btn-group-xl'>
+                  <span className='btn btn-primary d-flex align-items-center me-2'
+                    
+                  >
+                    <i className="fa-solid fa-pencil space-i"></i>
+                  </span>
+                  <span className='btn btn-danger d-flex align-items-center'
+                    onClick={() => deleteReserva(item._id)}
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      
       </div>
     </div >
   )
-              }
-            
-              
+}
+
+
 
 export default Reservas

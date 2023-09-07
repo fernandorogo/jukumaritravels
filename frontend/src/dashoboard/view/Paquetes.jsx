@@ -1,6 +1,8 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
+
 
 
 const Paquetes = () => {
@@ -8,6 +10,10 @@ const Paquetes = () => {
   const [paqueteTuristico, setpaqueteTuristico] = useState('')
   const [reseñaPaqueteturistico, setreseñaPaqueteturistico] = useState('')
   const [valordelPaquete, setvalordelPaquete] = useState('')
+
+
+  const [edit, setEdit] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     getData();
@@ -18,6 +24,10 @@ const Paquetes = () => {
     setpaqueteTuristico('')
     setreseñaPaqueteturistico('')
     setvalordelPaquete('')
+
+    setEdit(false);
+
+
   }
   const getData = async () => {
     const { data } = await axios.get("http://localhost:4000/api/paquetes/");
@@ -34,6 +44,15 @@ const Paquetes = () => {
       await axios.post('http://localhost:4000/api/paquetes/', newPaquete);
       cleanData();
       getData();
+      closeModal();
+
+      // SweetAlert2 para mostrar éxito
+      Swal.fire({
+        icon: 'success',
+        title: 'Paquete guardado exitosamente',
+        showConfirmButton: false,
+        timer: 1500
+      });
 
     } catch (error) {
       if (!error.response.data.ok) {
@@ -44,10 +63,61 @@ const Paquetes = () => {
 
     }
   }
+  const updateReserva = async () => {
+    try {
+      const id = localStorage.getItem('id');
+      const newPaquete = {
+        paqueteTuristico,
+        reseñaPaqueteturistico,
+        valordelPaquete,
+
+      }
+      const { data } = await axios.put('/api/paquetes/' + id, newPaquete);
+
+      cleanData();
+      getData();
+      closeModal();
+
+      Swal.fire({
+        icon: 'success',
+        title: data.message,
+        showConfirmButton: false,
+        timer: 1500
+      });
+
+    } catch (error) {
+      if (!error.response.data.ok) {
+        return alert(error.response.data.message)
+      }
+      console.log('error en saveCliente', error.message);
+
+    }
+  }
+
+  const editData = (item) => {
+    setEdit(true);
+    setpaqueteTuristico(item.paqueteTuristico)
+    setreseñaPaqueteturistico(item.reseñaPaqueteturistico)
+    setvalordelPaquete(item.valordelPaquete)
+
+    localStorage.setItem('id', item._id);
+    setIsModalOpen(true);
+
+  }
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+
+
+
+
+
   const actions = (e) => {
     e.preventDefault();
-    savePaquete();
+    edit ? updateReserva() : savePaquete();
   };
+
   const deletePaquete = async (id) => {
     try {
       Swal.fire({
@@ -81,24 +151,24 @@ const Paquetes = () => {
 
   return (
     <div>
-      
+
       <div className='container-md mt-5'>
 
-        <button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} data-bs-toggle="modal" data-bs-target="#exampleModal">
-          < i className="fa-solid fa-plus fa-beat fa-lg me-2" style={{ color: "#ffffff" }}></i> PAQUETE
-        </button>
 
-
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
           <div className="modal-dialog modal-lg">
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header" style={{ backgroundColor: "#008cba" }}>
                   <h5 className="modal-title text-white" id="exampleModalLabel">Ingreso de Paquetes</h5>
-                  <button type="button" className="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" className="btn-close bg-white" onClick={() => {
+                    cleanData();
+                    getData();
+                    closeModal();
+                  }} />
                 </div>
                 <div className="modal-body ">
-                  <form onSubmit={actions}>
+                  <form id=" paquetesForm" onSubmit={actions}>
                     <div className="col-md-12">
                       <label htmlFor="validationCustom01" className="form-label"> Nombre del Paquete</label>
                       <input type="text" className="form-control" id="paqueteTuristico"
@@ -116,9 +186,22 @@ const Paquetes = () => {
                         value={valordelPaquete} onChange={(e) => setvalordelPaquete(e.target.value.toUpperCase())} />
 
                     </div>
-                    <div className="modal-footer">
-                      <button type="button" className="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
-                      <button type="submit" className="btn text-white" style={{ backgroundColor: "#008cba" }}>Guardar Registro</button>
+                    <div className="modal-footer border-5">
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => {
+                          getData();
+                          cleanData();
+                          closeModal();
+
+                          document.getElementById('paquetesForm').click();
+                        }}
+                        data-bs-dismiss="modal"
+
+                      >Cerrar
+                      </button>
+                      <button type="submit" className="btn btn-primary">Guardar Registro</button>
                     </div>
                   </form>
                 </div>
@@ -127,48 +210,110 @@ const Paquetes = () => {
           </div>
         </div>
       </div>
-      <br></br>
-      <br></br>
-
-      <div className='container-md table-responsive'>
-        <table className="table table-bordered border-dark table-hover ">
-          <thead className= ''>
-            <tr style={{ backgroundColor: "#008cba", color: "#ffffff"}}>
-              <th scope="col">#</th>
-              <th scope="col">Nombre Paquete</th>
-              <th scope="col">Reseña del Paquete</th>
-              <th scope="col">Valor</th>
-              <th scope="col">Acciones</th>
-            </tr>
-          </thead >
-          <tbody>
-            {Array.isArray(paquetesturisticos) && paquetesturisticos.map((item, i) => (
-              <tr key={item._id}>
-                <td>{i + 1}</td>
-                <td>{item.paqueteTuristico}</td>
-                <td>{item.reseñaPaqueteturistico}</td>
-                <td>{item.valordelPaquete}</td>
 
 
-                <td>
-                  <div className='d-flex justify-content-between'>
-                    <span className='btn btn-primary me-2  '>
-                      <i className=" fa-solid fa-pencil space-i "></i>
-                    </span>
+      {/* Incio de la tabla Paquetes*/}
+      <div className='container container-flex card larger shadow mt-3'>
+        <div className='card-header d-flex justify-content-between align-items-center'>
+          <div className="dropdown no-arrow align-items-center">
+            <button className="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button">
+              <i className='fas fa-ellipsis-v 
+            text-gray-400'></i>
+            </button>
+            <div className="dropdown-menu shadow dropdown-menu-end animated--fade-in">
+              <p className="text-center dropdown-header">Exportar:</p>
+              <Link className="dropdown-item" href="#">
+                <i className="fa-solid fa-file-pdf me-2"></i>Pdf
+              </Link>
+              <Link className="dropdown-item" href="#">
+                <i className="fa-solid fa-file-excel me-2"></i> Excel
+              </Link>
+              <div className="dropdown-divider"></div><Link className="dropdown-item" href="#"> Somem</Link>
+            </div>
+          </div>
+
+          <div>
+            <h6 className='text-primary fw-bold m-0 mt-1 text-start'> Lista de Paquetes</h6>
+          </div>
+          <div>
+            <button type='button' className='btn btn-primary rounded-circle aling-end' style={{
+              backgroundColor: '#008cba'
+            }} onClick={() => { setIsModalOpen(true); }} title='Haga click para agregar un nuevo paquete'> <i className='fa-solid fa-plus fa-beat'></i></button>
+
+          </div>
+        </div>
+        <div className='d-none d-md-block'>
+          <div className='table-responsive'>
+            <table className='table table-bordered border-1 table-hover mt-2'>
+              <thead>
+                <tr style={{ background: '#008cba', color: '#ffffff' }}>
+                  <th scope='col'
+                    className='responsive-text'> # </th>
+                  <th scope='col'
+                    className='responsive-text'>Nombre del Paquete</th>
+                  <th scope='col'
+                    className='responsive-text'>Reseña del paquete</th>
+                  <th scope='col'
+                    className='responsive-text'> Valor del paquete</th>
+                  <th scope='col'> Acciones </th>
+                </tr>
+
+              </thead>
+              <tbody>
+                {Array.isArray(paquetesturisticos) && paquetesturisticos.map((item, i) => (
+                  <tr key={item._id}>
+                    <td className='responsive-text'>{i + 1}</td>
+                    <td className='responsive-text'>{item.paqueteTuristico}</td>
+                    <td className='responsive-text'>{item.reseñaPaqueteturistico}</td>
+                    <td className='responsive-text'>{item.valordelPaquete}</td>
+                    <td>
+                      <div className='btn-group btn-group-sm ' role='group'>
+                        <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}
+                          title='Editar'>
+                          <i className='fa-solid fa-pencil space-i'></i>
+                        </span>
+                        <span className='btn btn-danger d-flex align-itesm-center' onClick={() => deletePaquete(item._id)}
+                          title='Eliminar'>
+                          <i className='fa-solid fa-trash'></i>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
 
-                    <span className='btn btn-danger me-2  '
-                      onClick={() => deletePaquete(item._id)}
-                    ><i className="fa-solid fa-trash"></i></span>
-                  </div>
+        {/*Mostar cards solo en dispositivos moviles */}
+        <div className='d-md-none'>
+          {Array.isArray(paquetesturisticos) && paquetesturisticos.map((item, i) => (
+            <div key={item._id} className='card border-3'>
+              <div className='card-body'>
+                <h5 className='card-title'> Paquete Turistico {i + 1} </h5>
+                <p className='card-text'>
+                  <strong> Nombre del Paquete: </strong> {item.paqueteTuristico} <br />
+                  <strong> Reseña del Paquete: </strong> {item.reseñaPaqueteturistico} <br />
+                  <strong> Valor del Paquete</strong> {item.valordelPaquete}
+                </p>
+                <div className='btn-group btn-group-xl'>
+                  <span className='btn btn-primary d-flex align-items-center me-2'
+                    onClick={() => editData(item)}
+                  >
+                    <i className="fa-solid fa-pencil space-i"></i>
+                  </span>
+                  <span className='btn btn-danger d-flex align-items-center'
+                    onClick={() => deletePaquete(item._id)}
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                  </span>
+                </div>
 
-                </td>
-              </tr>
-            ))}
-
-
-          </tbody>
-        </table>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
