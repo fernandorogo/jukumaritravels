@@ -161,39 +161,138 @@ const Reservas = () => {
                 }} />
               </div>
               <div className="modal-body">
-                <form onSubmit={actions}>
-                  <div className="col-md-12 mb-3">
-                    <label htmlFor="validationCustom01" className="form-label">Fecha Reserva</label>
-                    <input type="date" className="form-control" id="fechaReserva"
-                      value={fechaReserva} onChange={(e) => setFechaReserva(e.target.value.toUpperCase())} required />
+                <div className='row'>
+                  <div className='col-md-6'>
+                    <form onSubmit={actions}>
+                      <div className="row">
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="validationCustom01" className="form-label">Fecha Reserva</label>
+                          <input type="date" className="form-control" id="fechaReserva"
+                            value={fechaReserva} onChange={(e) => setFechaReserva(e.target.value.toUpperCase())} required />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="documentoCliente" className="form-label">Documento del Cliente</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            id="documentoCliente"
+                            value={documentoCliente}
+                            onChange={(e) => setDocumentoCliente(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label htmlFor="nombreCliente" className="form-label">Nombre del Cliente</label>
+                        <input type="text" className="form-control" id="nombreCliente" />
+                      </div>
+                      <div className="row mt-3">
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="fechaSalida" className="form-label">Fecha Salida</label>
+                          <input type="date" className="form-control" id="fechaSalida" value={fechaSalida} onChange={(e) => setFechaSalida(e.target.value.toUpperCase())} required />
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="fechaLlegada" className="form-label">Fecha Regreso</label>
+                          <input type="date" className="form-control" id="fechaLlegada" value={fechaLlegada} onChange={(e) => setFechaLlegada(e.target.value.toUpperCase())} required />
+                        </div>
+                      </div>
+                      <div className="row mt-3">
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="destino" className="form-label">Destino</label>
+                          <select
+                            className="form-select"
+                            id="destino"
+                          >
+                            <option value="">Selecciona un destino</option>
+                            <option value="destino1">Destino 1</option>
+                            <option value="destino2">Destino 2</option>
+                            {/* Agrega más opciones según tus necesidades */}
+                          </select>
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <label htmlFor="paquete" className="form-label">Paquete</label>
+                          <select
+                            className="form-select"
+                            id="paquete"
+                          >
+                            <option value="">Selecciona un paquete</option>
+                            <option value="paquete1">Paquete 1</option>
+                            <option value="paquete2">Paquete 2</option>
+                            {/* Agrega más opciones según tus necesidades */}
+                          </select>
+                        </div>
+                      </div>
+                      {/* Campo para ingresar el documento del cliente */}
+
+
+                      {/* ... Resto del formulario ... */}
+                      <div className="modal-footer">
+                        <button type="button" className="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" className="btn btn-primary"  >Guardar Registro</button>
+                      </div>
+                    </form>
                   </div>
-                  <div className="col-md-12 mb-3">
-                    <label htmlFor="fechaSalida" className="form-label">Fecha Salida</label>
-                    <input type="date" className="form-control" id="fechaSalida" value={fechaSalida} onChange={(e) => setFechaSalida(e.target.value.toUpperCase())} required />
+                  <div className="col-md-6">
+                    <table className="table table-bordered border-1 table-hover mt-2">
+                      <thead>
+                        <tr>
+                          <th scope="col">#</th>
+                          <th scope="col">Documento</th>
+                          <th scope="col">Pasajeros</th>
+                          <th scope="col">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <th scope="row">1</th>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td><input type="text" className="form-control"
+                          /></td>
+
+                          <td>
+                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">2</th>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td>
+                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
+                            </button>
+                          </td>
+
+                        </tr>
+                        <tr>
+                          <th scope="row">3</th>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td>
+                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">4</th>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td><input type="text" className="form-control"
+                          /></td>
+                          <td>
+                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="col-md-12 mb-3">
-                    <label htmlFor="fechaLlegada" className="form-label">Fecha Regreso</label>
-                    <input type="date" className="form-control" id="fechaLlegada" value={fechaLlegada} onChange={(e) => setFechaLlegada(e.target.value.toUpperCase())} required />
-                  </div>
-                  {/* Campo para ingresar el documento del cliente */}
-                  <div className="mb-3">
-                    <label htmlFor="documentoCliente" className="form-label">Documento del Cliente</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="documentoCliente"
-                      value={documentoCliente}
-                      onChange={(e) => setDocumentoCliente(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <button type="button" className="btn btn-primary" onClick={consultarCliente}>Consultar Cliente</button>
-                  {/* ... Resto del formulario ... */}
-                  <div className="modal-footer">
-                    <button type="button" className="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
-                    <button type="submit" className="btn btn-primary"  >Guardar Registro</button>
-                  </div>
-                </form>
+                </div>
               </div>
             </div>
           </div>
@@ -306,7 +405,7 @@ const Reservas = () => {
       </div>
       {/* Fin de la tabla de Reservas*/}
     </div>
-    
+
 
 
 

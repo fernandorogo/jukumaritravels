@@ -10,92 +10,97 @@ paquetesturisticosCtrl.list = async (req, res) => {
             page,
         };
 
-        // const paquetesturisticos = await paquetesturisticosModel.find().populate("destinos").populate("detallepaquete")
         const paquetesturisticos = await paquetesturisticosModel.paginate({}, options)
         res.json({
             ok: true,
             paquetesturisticos
-
-        })
+        });
     }
     catch (error) {
         res.status(500).json({
             ok: false,
             message: error.message
-        })
+        });
     }
 }
-paquetesturisticosCtrl.listid = async (req, res) => {
-    try {
-        const { id } = req.params
-        const paqueteturistico = await paquetesturisticosModel.findById({ _id: id })
-        if (!paqueteturistico) {
-            res.status(404).json({
-                ok: false,
-                message: 'Paquete turistico no encontrado'
 
-            })
-        }
-        res.json({ ok: true, message: paqueteturistico });
-
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            message: error.message
-        })
-    }
-
-}
 paquetesturisticosCtrl.add = async (req, res) => {
     try {
-        const { paqueteTuristico, reseñaPaqueteturistico, valordelPaquete, destinos, detallepaquete } = req.body
-        const newpaqueteturistico = new paquetesturisticosModel({
-            paqueteTuristico,
-            reseñaPaqueteturistico,
-            valordelPaquete,
-            destinos,
-            detallepaquete
-
+        const newpaquetetrustico = await paquetesturisticosModel.create(req.body)
+        res.status(201).json({
+            ok: true,
+            newpaquetetrustico
+        })
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            message: error.message,
         });
-        await newpaqueteturistico.save();
+    }
+
+}
+
+paquetesturisticosCtrl.listall = async (req, res) => {
+    try {
+        // Consultar todos los paquetes turísticos sin paginación
+        const paquetesturisticos = await paquetesturisticosModel.find({});
+
         res.json({
             ok: true,
-            newpaqueteturistico
-
-        })
-
+            paquetesturisticos
+        });
     } catch (error) {
         res.status(500).json({
             ok: false,
             message: error.message
-        })
+        });
     }
 }
+
+paquetesturisticosCtrl.listid = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const paqueteturistico = await paquetesturisticosModel.findById(id).populate('detallepaquete');
+
+        if (!paqueteturistico) {
+            return res.status(404).json({
+                ok: false,
+                message: 'Paquete turístico no encontrado'
+            });
+        }
+        res.json({ ok: true, paqueteturistico });
+    } catch (error) {
+        console.error('Error en paquetesturisticosCtrl.listid:', error);
+        res.status(500).json({
+            ok: false,
+            message: error.message
+        });
+    }
+};
+
 paquetesturisticosCtrl.update = async (req, res) => {
     try {
         const { id } = req.params;
         const paqueteturistico = await paquetesturisticosModel.findById({ _id: id })
+
         if (!paqueteturistico) {
             res.status(404).json({
                 ok: false,
                 message: 'Paquete turistico no encontrado'
-
             })
         }
-        const paqueteTuristico = req.body.paqueteTuristico || paqueteturistico.paqueteTuristico
-        const reseñaPaqueteturistico = req.body.reseñaPaqueteturistico || paqueteturistico.reseñaPaqueteturistico
-        const valordelPaquete = req.body.valordelPaquete || paqueteturistico.valordelPaquete
+        const nombrepaqueteturistico = req.body.nombrepaqueteturistico || paqueteturistico.nombrepaqueteturistico
+        const reseñapaqueteturistico = req.body.reseñapaqueteturistico || paqueteturistico.reseñapaqueteturistico
+        const valorpaqueteturistico = req.body.valorpaqueteturistico || paqueteturistico.valorpaqueteturistico
         const destinos = req.body.destinos || paqueteturistico.destinos
         const detallepaquete = req.body.detallepaquete || paqueteturistico.detallepaquete
 
         const paqueteturisticoUpdate = {
-            paqueteTuristico,
-            reseñaPaqueteturistico,
-            valordelPaquete,
+            nombrepaqueteturistico,
+            reseñapaqueteturistico,
+            valorpaqueteturistico,
             destinos,
             detallepaquete
-
-
         }
         await paqueteturistico.updateOne(paqueteturisticoUpdate)
         res.json({
@@ -109,6 +114,7 @@ paquetesturisticosCtrl.update = async (req, res) => {
         })
     }
 }
+
 paquetesturisticosCtrl.delete = async (req, res) => {
     try {
         const { id } = req.params;
@@ -117,16 +123,13 @@ paquetesturisticosCtrl.delete = async (req, res) => {
             res.status(404).json({
                 ok: false,
                 message: 'Paquete turistico no encontrado'
-
             })
         }
-
         await paqueteturistico.deleteOne();
         res.json({
             ok: true,
             message: 'Paquete turistico eliminado'
         })
-
     } catch (error) {
         res.status(500).json({
             ok: false,

@@ -3,6 +3,7 @@ const route = Router()
 const destinosCtrl = require('../controllers/destinos.controller')
 
 route.get('/list', destinosCtrl.list);
+route.get('/listall', destinosCtrl.listall);
 route.get('/:id', destinosCtrl.listid);
 route.post('/', destinosCtrl.add);
 route.put('/:id', destinosCtrl.update);

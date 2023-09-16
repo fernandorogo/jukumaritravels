@@ -25,6 +25,23 @@ destinosCtrl.list = async (req, res) => {
         })
     }
 }
+
+destinosCtrl.listall = async (req, res) => {
+    try {
+      const destinos = await destinosModel.find();
+  
+      res.json({
+        ok: true,
+        destinos,
+      });
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        message: error.message,
+      });
+    }
+  };
+  
 destinosCtrl.listid = async (req, res) => {
     try {
         const { id } = req.params
@@ -48,7 +65,7 @@ destinosCtrl.listid = async (req, res) => {
 }
 destinosCtrl.add = async (req, res) => {
     try {
-        const { nombreDestino, ubicacion, descripcionDestino, categoriadestinos } = req.body
+        const { nombreDestino, ubicacion, descripcionDestino} = req.body
 
         const verificar = await destinosModel.findOne({ nombreDestino });
         if (verificar) {
@@ -57,23 +74,16 @@ destinosCtrl.add = async (req, res) => {
                 message: "El nombre del destino ya se encuentra registrado"
             })
         }
-
-
-
-
         const newDestino = new destinosModel({
             nombreDestino,
             ubicacion,
             descripcionDestino,
-            categoriadestinos
         });
         await newDestino.save();
         res.json({
             ok: true,
             newDestino
-
         })
-
     } catch (error) {
         res.status(500).json({
             ok: false,
@@ -81,6 +91,7 @@ destinosCtrl.add = async (req, res) => {
         })
     }
 }
+
 destinosCtrl.update = async (req, res) => {
     try {
         const { id } = req.params;
@@ -95,14 +106,11 @@ destinosCtrl.update = async (req, res) => {
         const Destino = req.body.Destino || destino.Destino
         const ubicacion = req.body.ubicacion || destino.ubicacion
         const descripcionDestino = req.body.descripcionDestino || destino.descripcionDestino
-        const categoriadestinos = req.body.categoriadestinos || destino.categoriadestinos
 
         const destinoUpdate = {
             Destino,
             ubicacion,
             descripcionDestino,
-            categoriadestinos
-
         }
         await destino.updateOne(destinoUpdate)
         res.json({
@@ -124,7 +132,6 @@ destinosCtrl.delete = async (req, res) => {
             res.status(404).json({
                 ok: false,
                 message: 'Destino no encontrado'
-
             })
         }
 

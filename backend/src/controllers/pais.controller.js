@@ -4,7 +4,7 @@ const paisesModel = require('../models/pais.model');
 
 
 //Listar todos los Paises
-paisesCtrl.listAll = async (req, res) => {
+paisesCtrl.listall = async (req, res) => {
     try {
         const paises = await paisesModel.find();
 

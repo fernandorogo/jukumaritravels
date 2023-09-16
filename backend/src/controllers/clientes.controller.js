@@ -37,6 +37,7 @@ clientesCtrl.listid = async (req, res) => {
             })
         }
         const nombreCompleto = `${cliente.nombre1Cliente} ${cliente.nombre2Cliente} ${cliente.apellido1Cliente} ${cliente.apellido2Cliente}`;
+        console.log(cliente);
         res.json({ ok: true, message: cliente, nombreCompleto });
 
     } catch (error) {

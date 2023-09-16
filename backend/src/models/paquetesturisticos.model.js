@@ -2,20 +2,31 @@ const { Schema, model } = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
 const paqueteturisticoSchema = new Schema({
-    paqueteTuristico: {
+    nombrepaqueteTuristico: {
         type: String,
-        required: true,
+        required: true
     },
-    reseñaPaqueteturistico: {
+    reseñapaqueteTuristico: {
         type: String,
-        required: true,
+        required: true
     },
-    valordelPaquete: {
+    valorpaqueteTuristico: {
         type: Number,
         required: true
     },
-    destinos: [{ type:Schema.Types.ObjectId, ref: "destinos"}],
-    detallepaquete: [{ type:Schema.Types.ObjectId, ref: "detallepaquete"}]
+    detallespaqueteTuristico: [
+        {
+            nombredetallespaqueteTuristico: String,
+            required: true
+
+        },
+        {
+
+            precioDetallespaqueteTuristico: Number,
+        }
+    ],
+
+    destinos: [{ type: Schema.Types.ObjectId, ref: "destinos" }], // Cambiado de "destinos" a "destino"
 
 },
     {
@@ -25,5 +36,4 @@ const paqueteturisticoSchema = new Schema({
 
 paqueteturisticoSchema.plugin(mongoosePaginate);
 
-module.exports = model('paquetesturisticos', paqueteturisticoSchema)
-
+module.exports = model('paquetesturisticos', paqueteturisticoSchema);

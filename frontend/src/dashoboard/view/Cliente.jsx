@@ -88,8 +88,6 @@ const Cliente = () => {
     setEstadoSeleccionado('');
     setCiudadSeleccionada('');
 
-
-
     setEdit(false);
   }
 
@@ -200,7 +198,8 @@ const Cliente = () => {
         title: data.message,
         showConfirmButton: false,
         timer: 1500
-      });
+      }).then((result)=>{closeModal()}) ;
+      
     } catch (error) {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
@@ -214,28 +213,32 @@ const Cliente = () => {
   const editData = (item) => {
 
     setEdit(true);
-    setnombre1Cliente(item.nombre1Cliente)
-    setnombre2Cliente(item.nombre2Cliente)
-    setapellido1Cliente(item.apellido1Cliente)
-    setapellido2Cliente(item.apellido2Cliente)
-    settipodocumentoCliente(item.tipodocumentoCliente)
-    setdocumentoCliente(item.documentoCliente)
-    setfechanacimientoCliente(item.fechanacimientoCliente);
-    setcorreoelectronicoCliente(item.correoelectronicoCliente)
-    settelefono1Cliente(item.telefono1Cliente)
-    settelefono2Cliente(item.telefono2Cliente)
-    setdireccionCliente(item.direccionCliente)
-    setPaisCliente(item.paisCliente);
-    setEstadoCliente(item.estadoCliente);
-    setCiudadCliente(item.ciudadCliente);
-    setparentezcoCliente(item.parentezcoCliente)
-    setOtroParentezco(item.Otroparentezco)
-    setdocumentoTitular(item.documentoTitular)
+    setnombre1Cliente(item.nombre1Cliente || '')
+    setnombre2Cliente(item.nombre2Cliente || '')
+    setapellido1Cliente(item.apellido1Cliente || '')
+    setapellido2Cliente(item.apellido2Cliente || '')
+    settipodocumentoCliente(item.tipodocumentoCliente || '')
+    setdocumentoCliente(item.documentoCliente || '')
+    setfechanacimientoCliente(item.fechanacimientoCliente || '');
+    setcorreoelectronicoCliente(item.correoelectronicoCliente || '')
+    settelefono1Cliente(item.telefono1Cliente || '')
+    settelefono2Cliente(item.telefono2Cliente || '')
+    setdireccionCliente(item.direccionCliente || '')
+    setPaisCliente(item.paisCliente || '');
+    setEstadoCliente(item.estadoCliente || '');
+    setCiudadCliente(item.ciudadCliente || '');
+    setparentezcoCliente(item.parentezcoCliente || '')
+    setOtroParentezco(item.Otroparentezco || '')
+    setdocumentoTitular(item.documentoTitular || '')
 
     // Configurar los valores de selección de país, estado y ciudad
-    setPaisSeleccionado(item.paisCliente);
-    setEstadoSeleccionado(item.estadoCliente);
-    setCiudadSeleccionada(item.ciudadCliente);
+    setPaisSeleccionado(item.paisCliente || '');
+    handlePaisChange(item.paisCliente)
+    setEstadoSeleccionado(item.estadoCliente || '');
+    handleEstadoChange(item.estadoCliente)
+    setCiudadSeleccionada(item.ciudadCliente || '');
+    handlePaisChange(item.estadoCliente)
+    
 
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
@@ -309,11 +312,11 @@ const Cliente = () => {
   };
 
   // Esta funcion da el formato de fecha de luxon https://moment.github.io/luxon
+  const formattedDate = fechanacimientoCliente.slice(0, 10); 
+  
 
-  const formattedDate = DateTime.fromISO(fechanacimientoCliente).toFormat('yyyy-MM-dd');
 
   //Esta funcion permite que al seleccionar la opcion Otro en la listaa de parentesco, se muestre el input de otro
-
   const handleParentezcoChange = (e) => {
     const selectedValue = e.target.value;
     setparentezcoCliente(selectedValue);
@@ -353,8 +356,6 @@ const Cliente = () => {
       setNombreCompleto('');
     }
   };
-
-
 
   const obtenerPaises = async () => {
     try {
@@ -507,13 +508,14 @@ const Cliente = () => {
                       <label htmlFor="fechaNacimiento" className="form-label">Fecha de Nacimiento</label>
                       <input
                         type="date"
-                        className="form-control"
+                        className={`form-control ${fechaError ? 'is-invalid' : ''}`}
                         id="fechaNacimiento"
                         value={formattedDate}
                         onChange={handleFechaChange}
                         required
                       />
-                      {fechaError && <p className="text-danger">{fechaError}</p>}
+                      
+                      {fechaError && <div className="invalid-feedback">{fechaError}</div>}
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="correoElectronico" className="form-label">Correo Electronico</label>
@@ -561,7 +563,7 @@ const Cliente = () => {
                       <select className="form-select" value={edit ? estadoCliente : estadoSeleccionado} onChange={(e) => handleEstadoChange(e.target.value)}>
                         <option value="">Selecciona un estado</option>
                         {estados.map((estados) => (
-                          <option key={estados.idEstado} value={estados.idEstado}>{estados.nombreEstado}</option>
+                          <option key={estados.idEstado} value={estados.idEstado}  >{estados.nombreEstado}</option>
                         ))}
                       </select>
                     </div>

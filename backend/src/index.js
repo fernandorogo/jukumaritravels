@@ -19,9 +19,7 @@ app.use(cors({ origin: "*" }));
 app.use('/api/clientes', require('./routes/clientes.route'));
 app.use('/api/reservas', require('./routes/reservas.route'));
 app.use('/api/pasajeros', require('./routes/pasajerosdelareserva.route'));
-app.use('/api/paquetes', require('./routes/paquetesturiticos.route'));
-app.use('/api/detallepaquete', require('./routes/detallepaquete.route'));
-app.use('/api/productos', require('./routes/productosturisticos.route'));
+//app.use('/api/paquetes', require('./routes/paquetesturiticos.route'));
 app.use('/api/destinos', require('./routes/destinos.route'));
 app.use('/api/categorias', require('./routes/categoriadestino.route'))
 app.use('/api/proveedores', require('./routes/proveedores.route'));
