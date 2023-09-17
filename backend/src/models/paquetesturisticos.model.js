@@ -2,28 +2,28 @@ const { Schema, model } = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
 const paqueteturisticoSchema = new Schema({
-    nombrepaqueteTuristico: {
+    nombrePaqueteTuristico: {
         type: String,
-        required: true
+        required: true,
     },
-    reseñapaqueteTuristico: {
+    reseñaPaqueteTuristico: {
         type: String,
-        required: true
+        required: true,
     },
-    valorpaqueteTuristico: {
+    valorPaqueteTuristico: {
         type: Number,
-        required: true
+        required: true,
     },
-    detallespaqueteTuristico: [
+    detallesPaqueteTuristico: [
         {
-            nombredetallespaqueteTuristico: String,
-            required: true
-
+            nombredetallesPaqueteTuristico: {
+                type: String,
+            },
+            precioDetallesPaqueteTuristico: {
+                type: Number,
+            }
+              
         },
-        {
-
-            precioDetallespaqueteTuristico: Number,
-        }
     ],
 
     destinos: [{ type: Schema.Types.ObjectId, ref: "destinos" }], // Cambiado de "destinos" a "destino"
