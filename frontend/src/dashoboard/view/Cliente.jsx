@@ -237,9 +237,8 @@ const Cliente = () => {
     setEstadoSeleccionado(item.estadoCliente || '');
     handleEstadoChange(item.estadoCliente)
     setCiudadSeleccionada(item.ciudadCliente || '');
-    handlePaisChange(item.estadoCliente)
+    handleCiudadChange(item.ciudadCliente)
     
-
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
 
