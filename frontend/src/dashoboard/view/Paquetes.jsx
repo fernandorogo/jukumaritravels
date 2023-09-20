@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
+import Pagination from 'rc-pagination'
 
 
 
@@ -15,9 +16,18 @@ const Paquetes = () => {
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredPaquetes, setfilteredPaquetes] = useState([]);
+
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState('')
+
+
+
   useEffect(() => {
-    getData();
-  }, []);
+    getData(page);
+    fetchPaquetesTuristicos();
+  }, [page]);
 
   const cleanData = () => {
     setPaquetesturisticos('')
@@ -29,10 +39,19 @@ const Paquetes = () => {
 
 
   }
-  const getData = async () => {
-    const { data } = await axios.get("http://localhost:4000/api/paquetes/");
-    setPaquetesturisticos(data.paquetesturisticos);
+  const getData = async (pageCurrent) => {
+    const { data } = await axios.get(`/api/paquetes/list/?page=${pageCurrent}`);
+    setPaquetesturisticos(data.paquetesturisticos.docs);
+    setfilteredPaquetes(data.paquetestusirticos.docs);
+    setPage(data.paquetesturisticos.page);
+    setTotalPages(data.paquetesturisticos.totalPages)
   };
+
+  const onchangePage = (page) => {
+    getData(page)
+  }
+
+
   const savePaquete = async () => {
     try {
       const newPaquete = {
@@ -41,7 +60,7 @@ const Paquetes = () => {
         valordelPaquete,
 
       }
-      await axios.post('http://localhost:4000/api/paquetes/', newPaquete);
+      await axios.post('/api/paquetes/', newPaquete);
       cleanData();
       getData();
       closeModal();
@@ -63,7 +82,7 @@ const Paquetes = () => {
 
     }
   }
-  const updateReserva = async () => {
+  const updatePaquete = async () => {
     try {
       const id = localStorage.getItem('id');
       const newPaquete = {
@@ -89,7 +108,7 @@ const Paquetes = () => {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
       }
-      console.log('error en saveCliente', error.message);
+      console.log('error en savePaquete', error.message);
 
     }
   }
@@ -109,13 +128,9 @@ const Paquetes = () => {
   };
 
 
-
-
-
-
   const actions = (e) => {
     e.preventDefault();
-    edit ? updateReserva() : savePaquete();
+    edit ? updatePaquete() : savePaquete();
   };
 
   const deletePaquete = async (id) => {
@@ -146,6 +161,27 @@ const Paquetes = () => {
       }
       console.log('error en deletePaquete', error.message);
     }
+  }
+
+  
+  const fetchPaquetesTuristicos = async () => {
+    fetch('api/paquetes')
+      .then(response => response.text())
+      .catch(error => console.error('Error feching paquetesturisticos:', error));
+  };
+
+  const searchFields = [
+    'paqueteTuristico'
+  ];
+
+  const handleSearch = (e) => {
+    const searchText = e.target.value;
+    setSearchTerm(searchText);
+
+    const filtered = paquetesturisticos.filter((paqueteturistico) => searchFields.some((field) => String(paqueteturistico[field]).toLowerCase().includes(searchText.toLowerCase())
+    )
+    );
+    setfilteredPaquetes(filtered)
   }
 
 
@@ -236,6 +272,16 @@ const Paquetes = () => {
             <h6 className='text-primary fw-bold m-0 mt-1 text-start'> Lista de Paquetes</h6>
           </div>
           <div>
+            <input className="form-control me-5" aria-label="Search"
+              type="text"
+              placeholder="Buscar paquete..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+
+
+          <div>
             <button type='button' className='btn btn-primary rounded-circle aling-end' style={{
               backgroundColor: '#008cba'
             }} onClick={() => { setIsModalOpen(true); }} title='Haga click para agregar un nuevo paquete'> <i className='fa-solid fa-plus fa-beat'></i></button>
@@ -260,7 +306,7 @@ const Paquetes = () => {
 
               </thead>
               <tbody>
-                {Array.isArray(paquetesturisticos) && paquetesturisticos.map((item, i) => (
+                {Array.isArray(filteredPaquetes) && filteredPaquetes.map((item, i) => (
                   <tr key={item._id}>
                     <td className='responsive-text'>{i + 1}</td>
                     <td className='responsive-text'>{item.paqueteTuristico}</td>
@@ -314,6 +360,19 @@ const Paquetes = () => {
             </div>
           ))}
         </div>
+        <div className="my-1 d-flex justify-content-end mb-3 border-5">
+          <Pagination
+            className='pagination'
+            current={page}
+            total={totalPages}
+            pageSize={1}
+            onChange={onchangePage}
+          />
+        </div>
+
+
+
+
       </div>
     </div>
   )

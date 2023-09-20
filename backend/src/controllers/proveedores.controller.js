@@ -3,7 +3,15 @@ const proveedoresModel = require('../models/proveedores.model')
 
 proveedoresCtrl.list = async (req, res) => {
     try {
-        const proveedores = await proveedoresModel.find()
+        const limit= parseInt(req.query.limit) || 5;
+        const page= parseInt(req.query.page) || 1;
+        const options = {
+            limit,
+            page
+        };
+        //const proveedores = await proveedoresModel.find()
+        
+        const proveedores = await proveedoresModel.paginate({}, options)
         res.json({
             ok: true,
             proveedores

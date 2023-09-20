@@ -25,4 +25,4 @@ const destinoSchema = new Schema({
 
 destinoSchema.plugin(mongoosePaginate);
 
-module.exports = model('destinos', destinoSchema)
+module.exports = model('destinos', destinoSchema) 

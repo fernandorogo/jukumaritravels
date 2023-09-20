@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { DateTime } from 'luxon';
 import { Link } from 'react-router-dom';
 
+
 const Reservas = () => {
   const [reservas, setReservas] = useState([])
   const [fechaReserva, setFechaReserva] = useState('')
@@ -12,6 +13,8 @@ const Reservas = () => {
 
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  
 
 
 
@@ -31,7 +34,7 @@ const Reservas = () => {
   }
 
   const getData = async () => {
-    const { data } = await axios.get("http://localhost:4000/api/reservas/");
+    const { data } = await axios.get("/api/reservas/");
     setReservas(data.reservas);
   };
 
@@ -44,7 +47,8 @@ const Reservas = () => {
        
 
       }
-      await axios.post('http://localhost:4000/api/reservas/', newReserva);
+      await axios.post('/api/reservas/', newReserva);
+
       cleanData()
       getData();
 
@@ -89,7 +93,9 @@ const Reservas = () => {
       }
 
       const { data } = await axios.put('/api/reservas' + id, newReserva);
-      setFechaReserva(newReserva.fechaReserva);
+      setFechaReserva(fechaReserva.newReserva);
+
+      
       cleanData();
       getData();
       closeModal();
@@ -106,7 +112,7 @@ const Reservas = () => {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
       }
-      console.log('error en saveDestino', error.message);
+      console.log('error en saveReserva', error.message);
       
     }
   }
@@ -121,7 +127,7 @@ const Reservas = () => {
   }
 
   const formattedDate = DateTime.fromISO(fechaReserva).toFormat('yyyy-MM-dd');
-
+ 
   const deleteReserva = async (id) => {
     try {
       Swal.fire({
@@ -173,11 +179,11 @@ const Reservas = () => {
                 </div>
                 <div className="modal-body">
                   <form onSubmit={actions}>
-                    <div className="col-md-12 mb-3">
-                      <label htmlFor="validationCustom01" className="form-label">Fecha Reserva</label>
-                      <input type="date" className="form-control" id="fechaReserva"
-                        value={formattedDate} onChange={(e) => setFechaReserva(e.target.value.toUpperCase())} required />
-                    </div>
+                  <div className="col-md-12 mb-3">
+                    <label htmlFor="validationCustom01" className="form-label">Fecha Reserva</label>
+                    <input type="date" className="form-control" id="fechaReserva"
+                      value={formattedDate} onChange={(e) => setFechaReserva(e.target.value.toUpperCase())} required />
+                  </div>
                     <div className="col-md-12 mb-3">
                       <label htmlFor="fechaSalida" className="form-label">Fecha Salida</label>
                       <input type="date" className="form-control" id="fechaSalida" value={fechaSalida} onChange={(e) => setFechaSalida(e.target.value.toUpperCase())} required />

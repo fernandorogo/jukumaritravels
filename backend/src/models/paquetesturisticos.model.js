@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2') 
 
 const paqueteturisticoSchema = new Schema({
     paqueteTuristico: {
@@ -21,6 +22,7 @@ const paqueteturisticoSchema = new Schema({
         timestamps: true,
     }
 );
+paqueteturisticoSchema.plugin(mongoosePaginate);
 
 module.exports = model('paquetesturisticos', paqueteturisticoSchema)
 

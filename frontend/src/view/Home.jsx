@@ -20,7 +20,7 @@ const Page = () => {
 
   return (
     <div>
-      <Navibar/>
+      <Navibar />
       <>
 
         <div>
@@ -151,15 +151,16 @@ const Page = () => {
                   <p><strong>Atención de Calidad</strong>
                     <br />
                     Estamos ubicados en el Centro comercial
-                    <h3>Plaza Real</h3>
-                    Segundo piso <h3>L-205</h3>
+                    <br />
+                    Plaza Real
+                    Segundo piso L-205
                   </p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
+
 
 
 

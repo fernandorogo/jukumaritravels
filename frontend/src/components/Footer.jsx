@@ -1,12 +1,12 @@
-import React from 'react'
-import { Link, Route, Routes, useParams } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import listaDestinosTuristicos from '../view/ListaDestinosTuristicos';
 
 const Footer2 = () => {
         const primerosDestinos = listaDestinosTuristicos.slice(0, 5);
     return (
         <div>
-            <body>
+            <div>
                 <footer className="text-white">
                     <div className="container py-4 py-lg-5">
                         <div className="row">
@@ -42,8 +42,8 @@ const Footer2 = () => {
                                 <h3><strong>Contactanos</strong></h3>
                                 <hr />
                                 <ul className="footer-links">
-                                    <li><Link className="link-light"><i class="fa-solid fa-phone me-2"></i>+57 304 3635185</Link></li>
-                                    <li><Link className="link-light"><i class="fa-solid fa-envelope me-2"></i>jukumaritravels@gmail.com</Link></li>
+                                    <li><Link className="link-light"><i className="fa-solid fa-phone me-2"></i>+57 304 3635185</Link></li>
+                                    <li><Link className="link-light"><i className="fa-solid fa-envelope me-2"></i>jukumaritravels@gmail.com</Link></li>
                                     <br />
                                     <br />
                                 </ul>
@@ -74,7 +74,7 @@ const Footer2 = () => {
                         </div>
                     </div>
                 </footer>
-            </body>
+            </div>
         </div >
     )
 }

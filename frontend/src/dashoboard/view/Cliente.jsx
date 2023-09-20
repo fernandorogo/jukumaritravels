@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { DateTime } from 'luxon';
+import Pagination from 'rc-pagination';
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-
+import "./TextResponsive.css";
 
 const Cliente = () => {
   const [clientes, setClientes] = useState([])
@@ -32,10 +34,6 @@ const Cliente = () => {
   const [paisSeleccionado, setPaisSeleccionado] = useState("");
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
   const [ciudadSeleccionada, setCiudadSeleccionada] = useState("");
-
-
-
-
   //-----------------------------------------------------------------
   const [esMenorEdad, setEsMenorEdad] = useState('NO'); // Puedes inicializarlo según tus necesidades
   //Linea5
@@ -50,15 +48,19 @@ const Cliente = () => {
   //Bandera
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  // Paginacion
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState('')
+  //Search
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredClientes, setFilteredClientes] = useState([]); // Aquí almacenarás los clientes filtrados
 
 
   useEffect(() => {
-    getData();
+    getData(page);
     obtenerPaises();
     fetchClientes();
-
-  }, []);
+  }, [page]);
 
   // Limpiar campos del formulario
 
@@ -82,13 +84,26 @@ const Cliente = () => {
     setOtroParentezco('')
     setdocumentoTitular('')
 
+    setPaisSeleccionado('');
+    setEstadoSeleccionado('');
+    setCiudadSeleccionada('');
+
+
+
     setEdit(false);
   }
 
-  const getData = async () => {
-    const { data } = await axios.get("http://localhost:4000/api/clientes/");
-    setClientes(data.clientes);
+  const getData = async (pageCurrent) => {
+    const { data } = await axios.get(`/api/clientes/list/?page=${pageCurrent}`);
+    setClientes(data.clientes.docs);
+    setFilteredClientes(data.clientes.docs);
+    setPage(data.clientes.page);
+    setTotalPages(data.clientes.totalPages);
   };
+
+  const onchangePage = (page) => {
+    getData(page);
+  }
 
   // Guardar valores del formulario
 
@@ -118,14 +133,14 @@ const Cliente = () => {
         documentoTitular: documentoTitular  // Usa el valor validado
 
       }
-      const response = await axios.post('http://localhost:4000/api/clientes/', newCliente);
+      await axios.post('/api/clientes/', newCliente);
       cleanData();
       getData();
 
       // SweetAlert2 para mostrar éxito
       Swal.fire({
         icon: 'success',
-        title: 'El Cliente a sido registrado con exito',
+        title: 'El Cliente ha sido registrado con exito',
         showConfirmButton: false,
         timer: 1500
       });
@@ -169,11 +184,17 @@ const Cliente = () => {
         documentoTitular: documentoTitular  // Usa el valor validado
       };
 
-      const { data } = await axios.put('http://localhost:4000/api/clientes/' + id, newCliente);
+      const { data } = await axios.put('/api/clientes/' + id, newCliente);
       // Actualizar el estado de fechanacimientoCliente si es necesario
       setfechanacimientoCliente(newCliente.fechanacimientoCliente); // Asegúrate de que esto actualice el estado correctamente
+
+      setPaisSeleccionado(paisCliente);
+      setEstadoSeleccionado(estadoCliente);
+      setCiudadSeleccionada(ciudadCliente);
+
       cleanData();
       getData();
+      closeModal();
       // SweetAlert2 para mostrar éxito
       Swal.fire({
         icon: 'success',
@@ -212,10 +233,17 @@ const Cliente = () => {
     setOtroParentezco(item.Otroparentezco)
     setdocumentoTitular(item.documentoTitular)
 
+    // Configurar los valores de selección de país, estado y ciudad
+    setPaisSeleccionado(item.paisCliente);
+    setEstadoSeleccionado(item.estadoCliente);
+    setCiudadSeleccionada(item.ciudadCliente);
+
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
+
   };
 
+  // Función para cerrar el modal de edición
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -234,7 +262,7 @@ const Cliente = () => {
         confirmButtonText: 'Si, eliminar!'
       }).then(async (result) => {
         if (result.isConfirmed) {
-          const { data } = await axios.delete('http://localhost:4000/api/clientes/' + id);
+          const { data } = await axios.delete('/api/clientes/' + id);
           getData();
           Swal.fire({
             icon: 'success',
@@ -312,7 +340,7 @@ const Cliente = () => {
     setdocumentoTitular(value);
 
     try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/verificar/${value}`);
+      const response = await axios.get(`/api/clientes/verificar/${value}`);
       if (response.data.exists) {
         setValidacionDocumento(true);
         setNombreCompleto(response.data.nombreCompleto);
@@ -329,10 +357,9 @@ const Cliente = () => {
 
 
 
-  // Mostrar todos los paises existentes en el Backend
   const obtenerPaises = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/api/paises/listall");
+      const response = await axios.get("/api/paises/listall");
       console.log("Lista de paises:", response);
       setPaises(response.data.paises);
     } catch (error) {
@@ -340,79 +367,84 @@ const Cliente = () => {
     }
   };
 
-  //Mostrar un pais por id con su lista de estados
+  const handlePaisChange = (paisId) => {
+    setPaisSeleccionado(paisId);
+    setPaisCliente(paisId); // Almacenar en paisCliente
+    obtenerEstadosPorPais(paisId);
+  };
+
+  const handleEstadoChange = (estadoId) => {
+    setEstadoSeleccionado(estadoId);
+    setEstadoCliente(estadoId); // Almacenar en estadoCliente
+    obtenerCiudadesPorEstado(estadoId);
+  };
+
+  const handleCiudadChange = (ciudadId) => {
+    setCiudadSeleccionada(ciudadId);
+    setCiudadCliente(ciudadId); // Almacenar en ciudadCliente
+  };
+
   const obtenerEstadosPorPais = async (paisId) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/paises/listid/${paisId}`);
+      const response = await axios.get(`/api/paises/listid/${paisId}`);
       setEstados(response.data.estados || []);
+      setEstadoSeleccionado('');
+      setCiudadSeleccionada('');
     } catch (error) {
       console.error("Error al obtener los estados por país:", error);
       setEstados([]);
     }
   };
 
-  //Mostrar las ciudaddes de un estado seleccionado
   const obtenerCiudadesPorEstado = async (estadoId) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/estados/listid/${estadoId}`);
+      const response = await axios.get(`/api/estados/listid/${estadoId}`);
       setCiudades(response.data.ciudades || []);
-
+      setCiudadSeleccionada('');
     } catch (error) {
       console.error("Error al obtener las ciudades por estado", error);
       setCiudades([]);
-
     }
   };
 
 
-  const handlePaisChange = async (event) => {
-    const paisId = event.target.value;
-    setPaisSeleccionado(paisId);
+  //Mi filtro
+  const searchFields = [
+    'nombre1Cliente',
+    'nombre2Cliente',
+    'apellido1Cliente',
+    'apellido2Cliente',
+    'documentoCliente',
+    'fechanacimientoCliente',
+    'correoelectronicoCliente',
 
-    if (paisId) {
-      await obtenerEstadosPorPais(paisId);
-      setEstadoSeleccionado(""); // Limpiar el estado seleccionado al cambiar de país
-    } else {
-      setEstados([]);
-      setEstadoSeleccionado("");
-      setCiudades([]);
-    }
+    // Agrega más campos aquí
+  ];
+
+  const handleSearch = (event) => {
+    const searchText = event.target.value;
+    setSearchTerm(searchText);
+
+    // Filtra los clientes en base a los campos de búsqueda definidos
+    const filtered = clientes.filter((cliente) =>
+      searchFields.some((field) =>
+        String(cliente[field]).toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+
+    setFilteredClientes(filtered);
   };
-
-  const handleEstadoChange = async (event) => {
-    const estadoId = event.target.value;
-    setEstadoSeleccionado(estadoId);
-
-    if (estadoId) {
-      await obtenerCiudadesPorEstado(estadoId);
-      setCiudadSeleccionada(""); // Limpiar la ciudad seleccionada al cambiar de estado
-    } else {
-      setCiudades([]);
-      setCiudadSeleccionada("");
-    }
-  };
-
-  const handleCiudadChange = async (event) => {
-    const ciudadId = event.target.value;
-    setCiudadSeleccionada(ciudadId);
-
-    if (!ciudadId) {
-      // Si no se seleccionó una ciudad, limpiar la selección de ciudad
-      setCiudadSeleccionada("");
-    }
-  };
-
 
   return (
     <div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
 
-        <button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} onClick={() => {
+        {/*<button type="button" className="btn btn-primary" style={{ backgroundColor: "#008cba" }} onClick={() => {
           setIsModalOpen(true); // Abre la modal al hacer clic
         }}>
           < i className="fa-solid fa-plus fa-beat fa-lg me-2" style={{ color: "#ffffff" }}></i>CLIENTES
-        </button>
+      </button>*/}
 
         {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"> */}
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -491,8 +523,10 @@ const Cliente = () => {
                         onChange={handleFechaChange}
                         required
                       />
+
                       {fechaError && <p className="text-danger">{fechaError}</p>}
                     </div>
+
                     <div className="col-md-3">
                       <label htmlFor="correoElectronico" className="form-label">Correo Electronico</label>
                       <input type="email" className="form-control" id="correoElectronico"
@@ -524,76 +558,41 @@ const Cliente = () => {
                       />
                       <div className="invalid-feedback">Proporciona una dirección válida.</div>
                     </div>
+
+                    {/*Aqui inicia los select de Ciudad, Estado y Pais */}
                     <div className="col-md-3">
-                      <label htmlFor="pais" className="form-label">Pais</label>
-                      {paises.length > 0 ? (
-                        <select
-                          className="form-select"
-                          id="pais"
-                          value={paisSeleccionado}
-                          onChange={handlePaisChange}>
-                          <option value="">Seleccione país</option> {/* Opción predeterminada */}
-                          {paises.map((paises) => (
-                            <option key={paises.idPais} value={paises.idPais}>
-                              {paises.nombrePais}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <p>Cargando países...</p>
-                      )}
+                      <label htmlFor="direccionPrincipal" className="form-label">Pais</label>
+                      <select className="form-select" value={edit ? paisCliente : paisSeleccionado} onChange={(e) => handlePaisChange(e.target.value)}>
+                        <option value="">Selecciona un país</option>
+                        {paises.map((paises) => (
+                          <option key={paises.idPais} value={paises.idPais}>{paises.nombrePais}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="estado" className="form-label">Estado/Departamento</label>
-                      {estados.length > 0 && (
-                        <select
-                          className="form-select"
-                          value={estadoSeleccionado}
-                          onChange={handleEstadoChange}
-                        >
-                          <option value="">Seleccione el estado</option>
-                          {estados.map((estado) => (
-                            <option key={estado._id} value={estado._id}>
-                              {estado.nombreEstado}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      <label htmlFor="direccionPrincipal" className="form-label">Estado</label>
+                      <select className="form-select" value={edit ? estadoCliente : estadoSeleccionado} onChange={(e) => handleEstadoChange(e.target.value)}>
+                        <option value="">Selecciona un estado</option>
+                        {estados.map((estados) => (
+                          <option key={estados.idEstado} value={estados.idEstado}>{estados.nombreEstado}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="ciudad" className="form-label">Ciudad</label>
-                      {ciudades.length > 0 && (
-                        <select
-                          className="form-select"
-                          id="ciudad"
-                          value={ciudadSeleccionada}
-                          onChange={handleCiudadChange}
-                        >
-                          <option value="">Seleccione la ciudad</option> {/* Opción predeterminada */}
-                          {ciudades.map((ciudad) => (
-                            <option key={ciudad._id} value={ciudad._id}>
-                              {ciudad.nombreCiudad}
-                            </option>
-                          ))}
-                        </select>
-                      )}
+                      <label htmlFor="direccionPrincipal" className="form-label">Ciudad</label>
+                      <select className="form-select" value={edit ? ciudadCliente : ciudadSeleccionada} onChange={(e) => handleCiudadChange(e.target.value)}>
+                        <option value="">Selecciona una ciudad</option>
+                        {ciudades.map((ciudades) => (
+                          <option key={ciudades.idCiudad} value={ciudades.idCiudad}>{ciudades.nombreCiudad}</option>
+                        ))}
+                      </select>
                     </div>
-
-
-
-
-
-
-
-
-
-
 
 
 
 
                     {/* ... (código existente) ... */}
-                    <div className="col-md-3 mb-3">
+                    <div className="col-md-3">
                       <label htmlFor="esMenorEdad" className="form-label">Es menor de edad</label>
                       <select className="form-select" id="esMenorEdad" value={esMenorEdad} onChange={handleEsMenorEdadChange} required>
                         <option defaultValue disabled value="">Elige...</option>
@@ -682,70 +681,111 @@ const Cliente = () => {
           </div>
         </div>
 
-      </div >
+      </div>
       {/* Fin del formulario*/}
 
       {/* Inicio de la tabla de Clientes*/}
-      <div className='container container-flex'>
+      <div className='container container-flex card Larger shadow mt-3'>
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <div className="dropdown no-arrow align-items-center">
+            <button className="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button">
+              <i className="fas fa-ellipsis-v text-gray-400"></i>
+            </button>
+            <div className="dropdown-menu shadow dropdown-menu-end animated--fade-in">
+              <p className="text-center dropdown-header">Exportar:</p>
+              <Link className="dropdown-item" href="#">
+                <i className="fa-solid fa-file-pdf me-2"></i>Pdf
+              </Link>
+              <Link className="dropdown-item" href="#">
+                <i className="fa-solid fa-file-excel me-2"></i> Excel
+              </Link>
+              <div className="dropdown-divider"></div><Link className="dropdown-item" href="#"> Somem</Link>
+            </div>
+          </div>
+          <div>
+            <h6 className="text-primary fw-bold m-0 mt-1 text-start">Lista de Clientes</h6>
+          </div>
+
+          <div>
+            <input className="form-control me-5" aria-label="Search"
+              type="text"
+              placeholder="Buscar cliente..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
+          <div>
+            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} onClick={() => {
+              setIsModalOpen(true); // Abre la modal al hacer clic
+            }} title="Haga clic para agregar un nuevo cliente">< i className="fa-solid fa-plus fa-beat "></i></button>
+          </div>
+
+        </div>
         {/* Mostrar tabla solo en dispositivos grandes (computadoras) */}
         <div className='d-none d-md-block'>
-          <table className='table table-bordered border-dark table-hover mt-5'>
-            {/* ... contenido de la tabla ... */}
-            <thead>
-              <tr style={{ background: "#008cba", color: "#ffffff" }}>
-                <th scope="col">#</th>
-                <th scope="col-2">Nombre1</th>
-                <th scope="col">Nombre2</th>
-                <th scope="col">Apellido1</th>
-                <th scope="col">Apellido2</th>
-                <th scope="col">Tipo</th>
-                <th scope="col">Documento</th>
-                <th scope="col">Email</th>
-                <th scope="col">Telefono1</th>
-                <th scope="col">Titular</th>
-                <th scope="col">F Nacimiento</th>
-                <th scope="col">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(clientes) && clientes.map((item, i) => (
-                <tr key={item._id}>
-                  <td>{i + 1}</td>
-                  <td>{item.nombre1Cliente}</td>
-                  <td>{item.nombre2Cliente}</td>
-                  <td>{item.apellido1Cliente}</td>
-                  <td>{item.apellido2Cliente}</td>
-                  <td>{item.tipodocumentoCliente}</td>
-                  <td>{item.documentoCliente}</td>
-                  <td>{item.correoelectronicoCliente}</td>
-                  <td>{item.telefono1Cliente}</td>
-                  <td>{item.documentoTitular}</td>
-                  <td>{item.fechanacimientoCliente}</td>
-                  
-                  
-
-                  <td>
-                    <div className="btn-group btn-group-sm" role="group">
-                      <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}>
-                        <i className="fa-solid fa-pencil space-i"></i>
-                      </span>
-                      <span className='btn btn-danger d-flex align-items-center'
-                        onClick={() => deleteCliente(item._id)}
-                      >
-                        <i className="fa-solid fa-trash"></i>
-                      </span>
-                    </div>
-                  </td>
+          <div className="table-responsive">
+            <table className='table table-bordered border-1 table-hover mt-2'>
+              {/* ... contenido de la tabla ... */}
+              <thead>
+                <tr style={{ background: "#008cba", color: "#ffffff" }}>
+                  <th scope="col" className="responsive-text">#</th>
+                  <th scope="col-2" className="responsive-text">Nombre1</th>
+                  <th scope="col" className="responsive-text">Nombre2</th>
+                  <th scope="col" className="responsive-text">Apellido1</th>
+                  <th scope="col" className="responsive-text">Apellido2</th>
+                  <th scope="col" className="responsive-text">Tipo</th>
+                  <th scope="col" className="responsive-text">Documento</th>
+                  <th scope="col" className="responsive-text">Email</th>
+                  <th scope="col" className="responsive-text">Telefono1</th>
+                  <th scope="col" className="responsive-text">Titular</th>
+                  <th scope="col" className='responsive-text'>F Nacimiento</th>
+                  <th scope="col">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {Array.isArray(filteredClientes) && filteredClientes.map((item, i) => (
+                  <tr key={item._id}>
+                    <td className="responsive-text">{i + 1}</td>
+                    <td className="responsive-text">{item.nombre1Cliente}</td>
+                    <td className="responsive-text">{item.nombre2Cliente}</td>
+                    <td className="responsive-text">{item.apellido1Cliente}</td>
+                    <td className="responsive-text">{item.apellido2Cliente}</td>
+                    <td className="responsive-text">{item.tipodocumentoCliente}</td>
+                    <td className="responsive-text">{item.documentoCliente}</td>
+                    <td className="responsive-text">{item.correoelectronicoCliente}</td>
+                    <td className="responsive-text">{item.telefono1Cliente}</td>
+                    <td className="responsive-text">{item.documentoTitular}</td>
+                    <td className='responsive-text'>{DateTime.fromISO(item.fechanacimientoCliente).toFormat('yyyy-MM-dd')}</td>
+
+
+
+                    <td>
+                      <div className="btn-group btn-group-sm" role="group">
+                        <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}
+
+
+                        >
+                          <i className="fa-solid fa-pencil space-i" ></i>
+                        </span>
+                        <span className='btn btn-danger d-flex align-items-center'
+                          onClick={() => deleteCliente(item._id)}
+                        >
+                          <i className="fa-solid fa-trash"></i>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
         </div>
 
         {/* Mostrar tarjetas solo en dispositivos pequeños (móviles) */}
-        <div className='d-md-none mt-3'>
+        <div className='d-md-none'>
           {Array.isArray(clientes) && clientes.map((item, i) => (
-            <div key={item._id} className='card mb-3 border-3'>
+            <div key={item._id} className='card border-3'>
               {/* Contenido de la tarjeta */}
               <div className='card-body'>
                 <h5 className='card-title'>Cliente {i + 1}</h5>
@@ -762,7 +802,7 @@ const Cliente = () => {
                   <strong></strong>
                 </p>
                 <div className='btn-group btn-group-xl'>
-                  <span className='btn btn-primary d-flex align-items-center me-2'>
+                  <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}>
                     <i className="fa-solid fa-pencil space-i"></i>
                   </span>
                   <span className='btn btn-danger d-flex align-items-center'
@@ -775,8 +815,22 @@ const Cliente = () => {
             </div>
           ))}
         </div>
+        <div className="my-1 d-flex justify-content-end mb-3 border-5">
+          <Pagination
+            className='pagination'
+            current={page}
+            total={totalPages}
+            pageSize={1}
+            onChange={onchangePage}
+          />
+        </div>
       </div>
+
       {/* Fin de la tabla de Clientes*/}
+
+
+
+
 
     </div >
   )

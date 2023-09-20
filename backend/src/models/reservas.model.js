@@ -2,16 +2,16 @@ const { Schema, model } = require('mongoose');
 
 const reservaSchema = new Schema({
     fechaReserva: {
-        type: String,
+        type: Date,
         
     },
    
     fechaSalida: {
-        type: String,
+        type: Date,
        
     },
     fechaLlegada: {
-        type: String,
+        type: Date,
         
     },
     pasajeros: {

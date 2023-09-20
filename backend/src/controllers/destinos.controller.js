@@ -3,7 +3,13 @@ const destinosModel = require('../models/destinos.model')
 
 destinosCtrl.list = async (req, res) => {
     try {
-        const destinos = await destinosModel.find().populate("categoriadestinos");
+        const limit = parseInt(req.query.limit) || 3;
+        const page = parseInt(req.query.page) || 1;
+        const options = {
+            limit,
+            page
+        }
+        const destinos = await destinosModel.paginate({},options)
         res.json({
             ok: true,
             destinos
@@ -72,7 +78,7 @@ destinosCtrl.update = async (req, res) => {
 
             })
         }
-        const nombreDestino = req.body.nombreDestino || destino.Destino
+        const nombreDestino = req.body.nombreDestino || destino.nombreDestino
         const ubicacion = req.body.ubicacion || destino.ubicacion
         const descripcionDestino = req.body.descripcionDestino || destino.descripcionDestino
         const categoriadestinos = req.body.categoriadestinos || destino.categoriadestinos
