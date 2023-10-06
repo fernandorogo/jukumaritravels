@@ -3,23 +3,26 @@ import Pagination from 'rc-pagination';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import Breadcrumbs from '../components/Breadcrumbs ';
 
 const Paquetes = () => {
   // Estado para los campos principales del paquete turístico
+  const [paquetesturisticos, setPaquetesTuristicos] = useState([]);
   const [nombrePaqueteTuristico, setNombrePaqueteTuristico] = useState('');
   const [reseñaPaqueteTuristico, setReseñaPaqueteTuristico] = useState('');
   const [valorPaqueteTuristico, setValorPaqueteTuristico] = useState('');
-  const [selectedDestino, setSelectedDestino] = useState('');
   const [destinos, setDestinos] = useState([]);
-
-  const [paquetesturisticos, setPaquetesturisticos] = useState([]);
+  const [selectedDestino, setSelectedDestino] = useState("");
+  const [destinoNombres, setDestinoNombres] = useState({}); 
+  //Search
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredPaquetes, setFilteredPaquetes] = useState([]); // Aquí almacenarás los Paquetes filtrados
 
   // Estado para los detalles del paquete
-  const [details, setDetails] = useState([
+  const [detallesPaquetesTuristicos, setDetallesPaquetesTuristicos] = useState([
     {
-      nombredetallePaquete: '',
-      showPriceInput: false,
-      preciodetallePaquete: '',
+      nombredetallesPaqueteTuristico: '',
+      precioDetallesPaqueteTuristico: '',
       isAdding: true,
     },
   ]);
@@ -28,45 +31,40 @@ const Paquetes = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState('');
 
-  //const [edit, setEdit] = useState(false);
-  //const [isModalOpen, setIsModalOpen] = useState(false)
+  const [edit, setEdit] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
 
   useEffect(() => {
     getData(page);
-    obtenerDestinosDesdeServidor();
+    obtenerDestinos();
   }, [page]);
+
+  // Limpiar campos del formulario
 
   const cleanData = () => {
     setNombrePaqueteTuristico('');
     setReseñaPaqueteTuristico('');
     setValorPaqueteTuristico('');
     setSelectedDestino('');
-    setDetails([
+    setDetallesPaquetesTuristicos([
       {
-        nombredetallePaquete: '',
-        showPriceInput: false,
-        preciodetallePaquete: '',
+        nombredetallesPaqueteTuristico: '',
+        precioDetallesPaqueteTuristico: '',
         isAdding: false,
       },
     ]);
+
+    setEdit(false);
+
   };
 
   const getData = async (pageCurrent) => {
-    try {
-      const response = await axios.get(`/api/paquetes/list?page=${pageCurrent}`);
-      if (response.data.ok) {
-        const { docs, page, totalPages } = response.data.paquetesturisticos;
-        setPaquetesturisticos(docs);
-        setPage(page);
-        setTotalPages(totalPages);
-      } else {
-        // Manejar cualquier error en la respuesta, por ejemplo, mostrar un mensaje de error
-        alert(response.data.message);
-      }
-    } catch (error) {
-      console.error('Error al obtener datos', error);
-    }
+    const { data } = await axios.get(`/api/paquetes/list?page=${pageCurrent}`);
+    setPaquetesTuristicos(data.paquetesturisticos.docs);
+    setFilteredPaquetes(data.paquetesturisticos.docs);
+    setPage(data.paquetesturisticos.page);
+    setTotalPages(data.paquetesturisticos.totalPages);
   };
 
   // Función para manejar cambios en la página
@@ -74,18 +72,29 @@ const Paquetes = () => {
     getData(page);
   };
 
-  const savePaqueteTuristico = async () => {
+  const savePaquete = async () => {
     try {
-      const newPaqueteTuristico = {
+
+      if (!selectedDestino) {
+        // Mostrar un mensaje de error o tomar alguna acción aquí
+        return;
+      }
+
+      const newPaquete = {
         nombrePaqueteTuristico,
         reseñaPaqueteTuristico,
         valorPaqueteTuristico,
-        destino: selectedDestino, // Utiliza el destino seleccionado
+        destinos: selectedDestino, // Utiliza el destino seleccionado
+        detallesPaqueteTuristico: detallesPaquetesTuristicos.map((detalle) => ({
+          nombredetallesPaqueteTuristico: detalle.nombredetallesPaqueteTuristico,
+          precioDetallesPaqueteTuristico: detalle.precioDetallesPaqueteTuristico,
+        })),
       };
 
-      await axios.post('/api/paquetes', newPaqueteTuristico);
+      await axios.post('/api/paquetes/add', newPaquete);
       cleanData();
       getData();
+      closeModal();
 
       // SweetAlert2 para mostrar éxito
       Swal.fire({
@@ -95,40 +104,45 @@ const Paquetes = () => {
         timer: 1500,
       });
 
-      // Recarga los datos después de un breve tiempo
       setTimeout(() => {
-        // Llama a una función para obtener los datos (reemplaza esto con tu lógica)
         getData();
       }, 1000); // Espera 1 segundo antes de recargar
 
     } catch (error) {
       if (!error.response.data.ok) {
-        return alert(error.response.data.message);
+        return alert(error.response.data.message)
       }
-      console.error('Error en savePaqueteTuristico', error.message);
+      console.log('error en savePaquete', error.message);
     }
-  };
+  }
 
-  // Define la función para actualizar un paquete turístico
+  // Actualziar Paquete registrado
+
   const updatePaquete = async () => {
     try {
-      const id = localStorage.getItem('id'); // Obtener el ID del paquete turístico a actualizar
+      const id = localStorage.getItem('id');
+      const elementosAEliminar = [];
+
       const newPaquete = {
         nombrePaqueteTuristico,
         reseñaPaqueteTuristico,
         valorPaqueteTuristico,
-        detallesPaqueteTuristico,
-        destino: selectedDestinoId, // Usar el ID del destino seleccionado
+        destinos: selectedDestino, // Utiliza el destino seleccionado
+        //----------------------------------------------------------------
+        detallesPaqueteTuristico: [], // Agrega detallesPaqueteTuristico vacío por ahora
+        deldetallesPaqueteTuristico: elementosAEliminar // Agrega deldetallesPaqueteTuristico vacío por ahora
       };
-  
+
       // Realizar la solicitud PUT para actualizar el paquete turístico
       const { data } = await axios.put('/api/paquetes/' + id, newPaquete);
-  
+
+      setSelectedDestino(destinos)
+
       // Limpiar los datos, cerrar el modal y realizar otras acciones necesarias
       cleanData();
       closeModal();
       getData();
-  
+
       // Mostrar una notificación de éxito
       Swal.fire({
         icon: 'success',
@@ -143,14 +157,35 @@ const Paquetes = () => {
       console.log('Error en updatePaquete', error.message);
     }
   };
-  
 
-  const actions = (e) => {
-    e.preventDefault(); 
-    edit ? updatePaquete() : savePaqueteTuristico();
+
+
+
+  const editData = (item) => {
+    console.log('Datos de item:', item); // Agrega esta línea
+    setEdit(true);
+    setNombrePaqueteTuristico(item.nombrePaqueteTuristico || '');
+    setReseñaPaqueteTuristico(item.reseñaPaqueteTuristico || '');
+    setValorPaqueteTuristico(item.valorPaqueteTuristico || '');
+    setSelectedDestino(item.destinos || '');
+    handleDestinoChange(item.destinos);
+
+    // Carga los detalles existentes en el estado detallesPaqueteTuristicoEdit
+    //setDetallesPaquetesTuristicos(item.detallesPaqueteTuristico || []);
+    //setDetallesPaquetesTuristicos([...item.detallesPaqueteTuristico]);
+    setDetallesPaquetesTuristicos(item.detallesPaqueteTuristico);
+
+
+    localStorage.setItem('id', item._id);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
 
+  //este codigo funciona muy bien. Borra todo desde el _id del paquete
   const deletePaquete = async (id) => {
     try {
       Swal.fire({
@@ -181,70 +216,135 @@ const Paquetes = () => {
     }
   }
 
-  const handleDetailChange = (index, field, value) => {
-    const updatedDetails = [...details];
-    updatedDetails[index][field] = value;
-    setDetails(updatedDetails);
+  const actions = async (e) => {
+    e.preventDefault();
+    edit ? updatePaquete() : savePaquete();
   };
 
-  const handleCheckboxChange = (index) => {
-    const updatedDetails = [...details];
-    updatedDetails[index].showPriceInput = !updatedDetails[index].showPriceInput;
-    setDetails(updatedDetails);
+
+  const handleAddRow = () => {
+    // Crea una nueva fila de detalle con valores iniciales
+    const newDetail = {
+      nombredetallesPaqueteTuristico: '',
+      precioDetallesPaqueteTuristico: '',
+      isAdding: true, // La nueva fila se marca como "agregando"
+    };
+
+    // Agrega la nueva fila al estado de detallesPaquetesTuristicos
+    setDetallesPaquetesTuristicos([...detallesPaquetesTuristicos, newDetail]);
   };
 
-  const handleDetailAction = (index) => {
-    const updatedDetails = [...details];
-    const detail = updatedDetails[index];
-
-
-    if (detail.isAdding) {
-      // Si está en modo "crear", cambia a modo "eliminar" y crea una nueva fila arriba
-      detail.isAdding = false;
-      const newDetail = {
-        nombredetallePaquete: '', // Limpiar el campo correspondiente
-        preciodetallePaquete: '', // Limpiar el campo correspondiente
-        isAdding: true, // Nueva fila en modo "crear"
-      };
-
-      updatedDetails.splice(index, 0, newDetail); // Insertar la nueva fila al inicio
-    } else if (updatedDetails.length > 1) {
-      // Si está en modo "eliminar" y hay más de una fila, elimina la fila
-      updatedDetails.splice(index, 1);
-    }
-
-    setDetails(updatedDetails);
 
 
 
+  //----------------------------------------------------------------
 
-  };
 
-  const obtenerDestinosDesdeServidor = async () => {
+  // Función para obtener la lista de destinos desde el servidor
+  const obtenerDestinos = async () => {
     try {
-      const response = await axios.get('/api/destinos/listall');
+      const response = await axios.get("/api/destinos/listall");
       console.log("Lista de destinos:", response);
-      setDestinos(response.data.destinos);
+      const destinosData = response.data.destinos;
+      setDestinos(destinosData);
+      // Crear un mapeo de _id a nombres
+      const nombres = {};
+      destinosData.forEach((destino) => {
+        nombres[destino._id] = destino.nombreDestino;
+      });
+      setDestinoNombres(nombres);
     } catch (error) {
-      console.error('Error al obtener destinos', error);
+      console.error("Error al obtener la lista de destinos:", error);
     }
   };
 
+
+  //Función para manejar el cambio de destino
+  const handleDestinoChange = (destinosId) => {
+    setSelectedDestino(destinosId);
+  };
+
+
+  //Mi filtro
+  const searchFields = [
+    'nombrePaqueteTuristico',
+  
+    
+   
+
+    // Agrega más campos aquí
+  ];
+
+  const handleSearch = (event) => {
+    const searchText = event.target.value;
+    setSearchTerm(searchText);
+
+    // Filtra los clientes en base a los campos de búsqueda definidos
+    const filtered = paquetesturisticos.filter((paquetesturistico) =>
+      searchFields.some((field) =>
+        String(paquetesturistico[field]).toLowerCase().includes(searchText.toLowerCase())
+      )
+    );
+    setFilteredPaquetes(filtered);
+  };
+
+
+  //------------------------------------------------------
+
+  // Función para agregar detalles a un paquete turístico
+  const addToSet = async (packageId, detailsToAdd) => {
+    try {
+      // Realiza una solicitud POST para agregar detalles al paquete
+      const response = await axios.post(`/api/paquetes/${packageId}/detalles`, { detailsToAdd });
+
+      // Llama a getData para actualizar la lista de detalles
+      getData(page); // Asegúrate de que la variable "page" esté disponible en este contexto
+
+      // Devuelve la respuesta del servidor (puede contener información adicional)
+      return response.data;
+    } catch (error) {
+      // Maneja errores si la solicitud falla
+      console.error('Error al agregar detalles:', error);
+      throw error; // Lanza el error para que pueda ser manejado en otro lugar si es necesario
+    }
+  }
+
+
+  // Función para eliminar detalles de un paquete turístico
+  const pullAll = async (packageId, detailsToRemove) => {
+    try {
+      const response = await axios.delete(`/api/paquetes/${packageId}/detalles`, { data: { details: detailsToRemove } });
+      return response.data;
+    } catch (error) {
+      console.error('Error al eliminar detalles:', error);
+      throw error;
+    }
+  }
+
+  //------------------------------------------------------
 
 
   return (
     <div>
+      <div className=" container" style={{ textAlign: 'left' }}>
+        <Breadcrumbs/>
+      </div>
+      
       <div className='container-md mt-5'>
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
           <div className="modal-dialog modal-xl">
             <div className="modal-dialog modal-xl">
               <div className="modal-content">
                 <div className="modal-header" style={{ backgroundColor: "#008cba" }}>
                   <h5 className="modal-title text-white" id="exampleModalLabel">Ingreso de Paquetes</h5>
-                  <button type="button" className="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" className="btn-close bg-white" onClick={() => {
+                    cleanData(); // Limpia los campos del formulario
+                    getData(); // Carga los datos actualizados
+                    closeModal();
+                  }} />
                 </div>
                 <div className="modal-body ">
-                  <form onSubmit={(e) => actions(e)}>
+                  <form id=' paquetesForm' onSubmit={actions}>
                     <div className="row">
                       <div className="col-md-5 border border-2 ms-3">
                         <div className="col-md-12">
@@ -252,7 +352,7 @@ const Paquetes = () => {
                           <input
                             type="text"
                             className="form-control"
-                            id="paqueteTuristico"
+                            id="nombrePaqueteTuristico"
                             value={nombrePaqueteTuristico}
                             onChange={(e) => setNombrePaqueteTuristico(e.target.value.toUpperCase())}
                             required
@@ -264,23 +364,22 @@ const Paquetes = () => {
                             className="form-control"
                             id="reseñaPaqueteTuristico"
                             value={reseñaPaqueteTuristico}
-                            onChange={(e) => setReseñaPaqueteTuristico(e.target.value)}
+                            onChange={(e) => setReseñaPaqueteTuristico(e.target.value.toUpperCase())}
                           ></textarea>
                         </div>
                         <div className="row">
                           <div className="col-md-6 mb-3">
                             <label htmlFor="destino" className="form-label">Destino</label>
                             <select
-                              className='form-select'
-                              id="destinoSelect"
+                              className="form-select"
                               value={selectedDestino}
-                              onChange={(e) => setSelectedDestino(e.target.value)}
+                              onChange={(e) => handleDestinoChange(e.target.value)}
                             >
                               <option value="">Seleccione un destino</option>
                               {Array.isArray(destinos) && destinos.length > 0 ? (
-                                destinos.map((destino) => (
-                                  <option key={destino._id} value={destino._id}>
-                                    {destino.nombreDestino}
+                                destinos.map((destinos) => (
+                                  <option key={destinos._id} value={destinos._id}>
+                                    {destinos.nombreDestino}
                                   </option>
                                 ))
                               ) : (
@@ -290,6 +389,9 @@ const Paquetes = () => {
                               )}
                             </select>
                           </div>
+
+
+
                           <div className="col-md-6">
                             <label htmlFor="validationCustom01" className="form-label">Costo por Persona</label>
                             <input
@@ -301,9 +403,29 @@ const Paquetes = () => {
                             />
                           </div>
                         </div>
-                        <div className="modal-footer">
-                          <button type="button" className="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
-                          <button type="submit" className="btn text-white" style={{ backgroundColor: "#008cba" }}>Guardar Registro</button>
+                        <div className="modal-footer border-5">
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => {
+                              getData(); // Carga los datos actualizados
+                              cleanData(); // Limpia los campos del formulario
+                              closeModal();
+                              document.getElementById("paquetesForm"); // Cierra el modal
+
+                            }}
+                            data-bs-dismiss="modal"
+                          >
+                            Cerrar
+                          </button>
+                          <button type="submit" className="btn btn-primary">Guardar Registro</button>
+                          <button
+                            type="button"
+                            className="btn btn-success mt-2"
+                            onClick={handleAddRow}
+                          >
+                            Agregar Detalles
+                          </button>
                         </div>
                       </div>
                       <div className="col-md-6 border border-2 table-responsive container container-flex">
@@ -312,70 +434,60 @@ const Paquetes = () => {
                             <tr>
                               <th>#</th>
                               <th>Detalle de Paquete</th>
-                              <th scope="col">Adición</th>
+
                               <th>Precio</th>
                               <th scope="col">Acción</th>
                             </tr>
                           </thead>
                           <tbody style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            {details.map((detail, index) => (
-                              <tr key={index}>
+                            {detallesPaquetesTuristicos.map((detail, index) => (
+                              <tr key={`${detail._id}-${index}`}>
                                 <td>{index + 1}</td>
                                 <td>
                                   <input
                                     className="form-control"
                                     type="text"
-                                    name="nombredetallePaquete"
-                                    value={detail.nombredetallePaquete}
-                                    onChange={(e) => handleDetailChange(index, 'nombredetallePaquete', e.target.value)}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="checkbox"
-                                    name={`showPriceInput-${index}`}
-                                    checked={detail.showPriceInput}
-                                    onChange={() => handleCheckboxChange(index)}
-                                  />
-                                </td>
-                                <td>
-                                  {detail.showPriceInput && (
-                                    <input
-                                      className="form-control"
-                                      type="number"
-                                      name="preciodetallePaquete"
-                                      value={detail.preciodetallePaquete}
-                                      onChange={(e) => handleDetailChange(index, 'preciodetallePaquete', e.target.value)}
-                                      placeholder="Precio"
-
-                                    />
-                                  )}
-                                </td>
-                                <td>
-                                  <button
-                                    onClick={() => handleDetailAction(index)}
-                                    type="button"
-                                    className={`btn ${detail.isAdding ? 'btn-primary' : 'btn-danger'
-                                      } rounded-circle align-end`}
-                                    style={{
-                                      backgroundColor: detail.isAdding ? '#008cba' : '#ff0000',
+                                    name="nombredetallesPaqueteTuristico"
+                                    value={detail.nombredetallesPaqueteTuristico}
+                                    onChange={(e) => {
+                                      const updatedDetalles = [...detallesPaquetesTuristicos];
+                                      updatedDetalles[index].nombredetallesPaqueteTuristico = e.target.value;
+                                      setDetallesPaquetesTuristicos(updatedDetalles);
                                     }}
-                                    title={
-                                      detail.isAdding
-                                        ? 'Haga clic para agregar un nuevo item del paquete'
-                                        : 'Haga clic para eliminar este item del paquete'
-                                    }
-                                  >
-                                    <i
-                                      className={`fa-solid ${detail.isAdding ? 'fa-plus' : 'fa-minus'
-                                        } fa-beat`}
-                                    ></i>
-                                  </button>
+                                  />
+                                </td>
+                                <td className="col-3">
+                                  <input
+                                    className="form-control text-end"
+                                    type="text"
+                                    name="precioDetallesPaqueteTuristico"
+                                    value={detail.precioDetallesPaqueteTuristico}
+                                    onChange={(e) => {
+                                      const updatedDetalles = [...detallesPaquetesTuristicos];
+                                      updatedDetalles[index].precioDetallesPaqueteTuristico = e.target.value;
+                                      setDetallesPaquetesTuristicos(updatedDetalles);
+                                    }}
+                                    placeholder="Precio"
+                                  />
+                                </td>
+                                <td>
+                                  <div className="btn-group btn-group-sm" role="group">
+                                    <span className='btn btn-danger me-2' onClick={() => pullAll(detail._id)}>
+                                      <i className="fa-solid fa-trash"></i>
+                                    </span>
+                                    <span className='btn btn-success' onClick={() => addToSet(detail._id)}>
+                                      <i className="fa-solid fa-plus"></i> 
+                                    </span>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
                           </tbody>
+
+
                         </table>
+
+
                       </div>
                     </div>
                   </form>
@@ -412,12 +524,14 @@ const Paquetes = () => {
             <input className="form-control me-5" aria-label="Search"
               type="text"
               placeholder="Buscar paquete..."
+              value={searchTerm}
+              onChange={handleSearch}
             />
           </div>
           <div>
-            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} data-bs-toggle="modal" data-bs-target="#exampleModal">
-              < i className="fa-solid fa-plus fa-beat "></i>
-            </button>
+            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} onClick={() => {
+              setIsModalOpen(true); // Abre la modal al hacer clic
+            }} title="Haga clic para agregar un nuevo paquete">< i className="fa-solid fa-plus fa-beat "></i></button>
           </div>
         </div>
         {/* Mostrar tabla solo en dispositivos grandes (computadoras) */}
@@ -431,20 +545,22 @@ const Paquetes = () => {
                   <th scope="col" className="responsive-text">Nombre Paquete</th>
                   <th scope="col" className="responsive-text">Reseña del Paquete</th>
                   <th scope="col" className="responsive-text">Valor</th>
+                  <th scope="col" className="responsive-text">Destino</th>
                   <th scope="col" className="responsive-text">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(paquetesturisticos) && paquetesturisticos.map((item, i) => (
+                {Array.isArray(filteredPaquetes) && filteredPaquetes.map((item, i) => (
                   <tr key={item._id}>
                     <td className="responsive-text">{i + 1}</td>
                     <td className="responsive-text">{item.nombrePaqueteTuristico}</td>
                     <td className="responsive-text">{item.reseñaPaqueteTuristico}</td>
                     <td className="responsive-text">{item.valorPaqueteTuristico}</td>
+                    <td className="responsive-text">{destinoNombres[item.destinos]}</td>
                     <td>
-                      <div className='btn-group btn-group-xl'>
-                        <span className='btn btn-primary d-flex align-items-center me-2'>
-                          <i className=" fa-solid fa-pencil space-i "></i>
+                      <div className="btn-group btn-group-sm" role="group">
+                        <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}>
+                          <i className="fa-solid fa-pencil space-i"></i>
                         </span>
                         <span className='btn btn-danger me-2  '
                           onClick={() => deletePaquete(item._id)}
@@ -467,7 +583,9 @@ const Paquetes = () => {
                 <p className='card-text'>
                   <strong>Nombre paquete:</strong> {item.nombrePaqueteTuristico}<br />
                   <strong>Reseña del Paquete:</strong> {item.reseñaPaqueteTuristico}<br />
+                  <strong>Destino:</strong> {item.destinos}<br />
                   <strong>Valor:</strong> {item.valorPaqueteTuristico}<br />
+
                   <strong></strong>
                 </p>
                 <div className='btn-group btn-group-xl'>

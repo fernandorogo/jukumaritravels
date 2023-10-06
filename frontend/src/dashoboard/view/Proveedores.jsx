@@ -1,14 +1,15 @@
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
 import Pagination from 'rc-pagination';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import Breadcrumbs from '../components/Breadcrumbs ';
 
 
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([])
-  const [tipodocumentoProveedor, setTipodocumentoProveedor] = useState('')
+  const [tipodocumentoProveedor, setTipodocumentoProveedor] = useState('NIT')
   const [documentoProveedor, setDocumentoProveedor] = useState('')
   const [razonsocialProveedor, setRazonsocialProveedor] = useState('')
   const [nombre1Proveedor, setNombre1Proveedor] = useState('')
@@ -26,6 +27,10 @@ const Proveedores = () => {
   // Paginacion
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState('')
+
+ 
+
+
 
 
 
@@ -87,6 +92,7 @@ const Proveedores = () => {
       await axios.post('/api/proveedores/', newProveedor);
       cleanData();
       getData();
+      closeModal();
 
       // SweetAlert2 para mostrar éxito
       Swal.fire({
@@ -132,6 +138,7 @@ const Proveedores = () => {
 
       cleanData();
       getData();
+      closeModal();
       // SweetAlert2 para mostrar éxito
       Swal.fire({
         icon: 'success',
@@ -204,6 +211,7 @@ const Proveedores = () => {
     edit ? updateProveedor() : saveProveedor();
   };
 
+  
 
 
 
@@ -213,6 +221,9 @@ const Proveedores = () => {
 
   return (
     <div>
+      <div className=" container" style={{ textAlign: 'left' }}>
+        <Breadcrumbs/>
+      </div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -229,18 +240,21 @@ const Proveedores = () => {
               <div className="modal-body">
                 <form id='proveedorForm' onSubmit={actions}>
                   <div className="row g-3">
-                    <div className="col-md-3">
-                      <label htmlFor="tipodocumentoProveedor" className="form-label">Tipo documento </label>
-                      <input type="text" className="form-control" id="tipodocumentoProveedor"
+                  <div className="col-md-3">
+                      <label htmlFor="tipoDocumento" className="form-label">Tipo Documento</label>
+                      <select className="form-select" id="tipoDocumento"
                         value={tipodocumentoProveedor}
-                        onChange={(e) => setTipodocumentoProveedor(e.target.value.toUpperCase())}
-                        maxLength={20}
-                        required
-                      />
+                        onChange={(e) => setTipodocumentoProveedor(e.target.value)}
+                        required>
+                        <option disabled value="">Elige...</option>
+                        <option value="CC">CEDULA DE CIUDADANIA</option>
+                        <option value="NIT">NIT</option>
+                      </select>
+                      <div className="invalid-feedback">Selecciona un estado válido.</div>
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="segundoNombre" className="form-label">Documento </label>
-                      <input type="text" className="form-control" id="segundoNombre"
+                      <input type="number" className="form-control" id="segundoNombre"
                         value={documentoProveedor}
                         onChange={(e) => setDocumentoProveedor(e.target.value.toUpperCase())}
                       />
@@ -289,21 +303,21 @@ const Proveedores = () => {
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="telefono1" className="form-label">Telefono 1</label>
-                      <input type="text" className="form-control" id="telefono1"
+                      <input type="number" className="form-control" id="telefono1"
                         value={telefono1Proveedor}
                         onChange={(e) => setTelefono1Proveedor(e.target.value)}
                         required />
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="telefono1" className="form-label">Telefono 2</label>
-                      <input type="text" className="form-control" id="telefono1"
+                      <input type="number" className="form-control" id="telefono1"
                         value={telefono2Proveedor}
                         onChange={(e) => setTelefono2Proveedor(e.target.value)}
                         required />
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="telefono1" className="form-label">Whatsapp</label>
-                      <input type="text" className="form-control" id="telefono1"
+                      <input type="number" className="form-control" id="telefono1"
                         value={whatsappProveedor}
                         onChange={(e) => setWhatsappProveedor(e.target.value)}
                         required />
@@ -429,7 +443,7 @@ const Proveedores = () => {
             </table>
           </div>
         </div>
-      </div >
+    
       {/* Mostrar tarjetas solo en dispositivos pequeños (móviles) */}
       <div className='d-md-none'>
         {Array.isArray(proveedores) && proveedores.map((item, i) => (
@@ -467,7 +481,7 @@ const Proveedores = () => {
             onChange={onchangePage}
           />
         </div>
-        
+        </div >
     
     </div>
 

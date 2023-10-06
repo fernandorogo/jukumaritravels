@@ -29,9 +29,11 @@ destinosCtrl.list = async (req, res) => {
 destinosCtrl.listall = async (req, res) => {
     try {
       const destinos = await destinosModel.find();
+      const totalDestinos = destinos.length; // Obten el número de destinos
   
       res.json({
         ok: true,
+        totalDestinos, // Agrega el número de destinos a la respuesta
         destinos,
       });
     } catch (error) {

@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import "./TextResponsive.css";
+import Breadcrumbs from '../components/Breadcrumbs ';
 
 const Cliente = () => {
   const [clientes, setClientes] = useState([])
@@ -142,12 +143,7 @@ const Cliente = () => {
         showConfirmButton: false,
         timer: 1500
       });
-
-      setTimeout(() => {
-        getData(); // Recargar los datos después de un breve tiempo
-      }, 1000); // Esperar 1 segundo antes de recargar
-
-
+      
     } catch (error) {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
@@ -191,6 +187,7 @@ const Cliente = () => {
       setCiudadSeleccionada(ciudadCliente);
 
       cleanData();
+      closeModal();
       getData();
       // SweetAlert2 para mostrar éxito
       Swal.fire({
@@ -198,7 +195,7 @@ const Cliente = () => {
         title: data.message,
         showConfirmButton: false,
         timer: 1500
-      }).then((result)=>{closeModal()}) ;
+      });
       
     } catch (error) {
       if (!error.response.data.ok) {
@@ -293,7 +290,6 @@ const Cliente = () => {
   const handleEsMenorEdadChange = (e) => {
     setEsMenorEdad(e.target.value);
   };
-
 
   // Esta funcion permite validar la fecha de nacimiento, esta no puede ser mayor a la fecha actual.
 
@@ -435,6 +431,9 @@ const Cliente = () => {
 
   return (
     <div>
+      <div className=" container" style={{ textAlign: 'left' }}>
+        <Breadcrumbs/>
+      </div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -588,7 +587,7 @@ const Cliente = () => {
                     {esMenorEdad === 'SI' && (
                       <>
                         <div className="col-md-3 mb-3">
-                          <label htmlFor="parentezco" className="form-label">Parentesco (si es menor de edad)</label>
+                          <label htmlFor="parentezco" className="form-label">Parentezco</label>
                           <select className="form-select" id="parentezco" value={parentezcoCliente} onChange={handleParentezcoChange} required>
                             <option defaultValue disabled value="">Elige...</option>
                             <option>Madre</option>

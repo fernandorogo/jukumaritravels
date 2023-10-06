@@ -2,24 +2,30 @@ const { Schema, model } = require('mongoose');
 
 const reservaSchema = new Schema({
     fechaReserva: {
-        type: String,
+        type: String, // Cambiado a Date para trabajar con fechas
+        required: true
         
     },
    
     fechaSalida: {
-        type: String,
-       
+        type: Date
     },
     fechaLlegada: {
-        type: String,
-        
+        type: Date
+
     },
+    documentoTitular: {
+        type: Number,
+
+    },
+
+
     pasajeros: {
         type: String,
         
     },
     clientes: [{ type: Schema.Types.ObjectId, ref: "clientes" }],
-
+    destinos: [{ type: Schema.Types.ObjectId, ref: 'destinos' }],
     paquetesturisticos: [{ type: Schema.Types.ObjectId, ref: "paquetesturisticos" }]
 },
     {

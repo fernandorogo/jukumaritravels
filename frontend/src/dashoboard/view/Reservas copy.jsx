@@ -2,26 +2,35 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import Breadcrumbs from '../components/Breadcrumbs ';
+
 
 const Reservas = () => {
   const [reservas, setReservas] = useState([])
   const [fechaReserva, setFechaReserva] = useState('')
   const [fechaSalida, setFechaSalida] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
-  const [documentoCliente, setDocumentoCliente] = useState(''); // Estado para almacenar el documento del cliente
-  const [clienteInfo, setClienteInfo] = useState(null); // Estado para almacenar la información del cliente
-
+  const [documentotitular, setDocumentoTitular] = useState('')
+  const [clientes, setClientes] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  // Estados relacionados con destinos
+  const [destinos, setDestinos] = useState([]);
+  const [selectedDestino, setSelectedDestino] = useState("");
+  const [destinoNombres, setDestinoNombres] = useState({});
   //Fecha error
   const [errorFechaSalida, setErrorFechaSalida] = useState('');
   const [errorFechaLlegada, setErrorFechaLlegada] = useState('');
+  //----------------------------------------------------------------
 
-
+  //Parte de las funciones
+  // Estado para almacenar el resultado de la validación
+  const [validacionDocumento, setValidacionDocumento] = useState(null);
+  const [nombreCompleto, setNombreCompleto] = useState('');
 
   useEffect(() => {
     getData();
     obtenerDestinos();
+    obtenerFechaActualYSetearReserva();
   }, []);
 
   const cleanData = () => {
@@ -29,19 +38,21 @@ const Reservas = () => {
     setFechaReserva('')
     setFechaSalida('')
     setFechaLlegada('')
+    setDocumentoTitular('')
+    setNombreCompleto('')
+    setClientes('');
     setSelectedDestino('')
-    setClienteInfo(null);
   }
 
   const getData = async () => {
-    const { data } = await axios.get("http://localhost:4000/api/reservas/");
+    const { data } = await axios.get("/api/reservas/");
     setReservas(data.reservas);
   };
 
   const saveReserva = async () => {
     try {
 
-      if (!selectedDestino) {
+      if (!selectedDestino || !clientes) {
         // Mostrar un mensaje de error o tomar alguna acción aquí
         return;
       }
@@ -51,13 +62,13 @@ const Reservas = () => {
         fechaSalida,
         fechaLlegada,
         destinos: selectedDestino,
-
+        clientes
 
       }
-      await axios.post('http://localhost:4000/api/reservas/add', newReserva);
+      await axios.post('/api/reservas/add', newReserva);
       cleanData()
       getData();
-      closeModal();
+
 
       // SweetAlert2 para mostrar éxito
       Swal.fire({
@@ -72,62 +83,18 @@ const Reservas = () => {
         return alert(error.response.data.message)
       }
       console.log('error en saveReserva', error.message);
-
     }
   }
+
   const actions = async (e) => {
     e.preventDefault();
     saveReserva();
-
-    // Realizar la consulta del cliente por documento
-    try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/${documentoCliente}`);
-      const data = response.data;
-
-      if (data.ok) {
-        setClienteInfo(data.message); // Almacenar la información del cliente
-        saveReserva(); // Llamar a saveReserva después de obtener la información del cliente
-      } else {
-        console.error(data.message);
-      }
-    } catch (error) {
-      console.error('Error al consultar cliente:', error.message);
-    }
   };
 
   // Función para cerrar el modal de edición
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
-
-
-
-
-  //codigo nuevo para consultar cliente
-  const consultarCliente = async (documentoCliente) => {
-    try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/${documentoCliente}`);
-      const data = response.data;
-
-      if (data.ok) {
-        setClienteInfo(data.message);
-        saveReserva();
-      } else {
-        console.error(data.message);
-      }
-    } catch (error) {
-      console.error('Error al consultar cliente:', error.message);
-    }
-  };
-
-  const completeDataFields = (item) => {
-    setFechaReserva(item.fechaReserva)
-    setFechaSalida(item.fechaSalida)
-    setFechaLlegada(item.fechaLlegada)
-    localStorage.setItem('id', item._id)
-
-  }
 
   const deleteReserva = async (id) => {
     try {
@@ -159,11 +126,28 @@ const Reservas = () => {
     }
   }
 
-  //--------------------Todo sobre los destinos --------------------------------
-  // Estados relacionados con destinos
-  const [destinos, setDestinos] = useState([]);
-  const [selectedDestino, setSelectedDestino] = useState("");
-  const [destinoNombres, setDestinoNombres] = useState({});
+  // Este codigo valida si el documento del Titular exite en la base de datos de Clientes
+  const handleDocumentoTitularChange = async (e) => {
+    const value = e.target.value;
+    setDocumentoTitular(value);
+
+    try {
+      const response = await axios.get(`/api/clientes/verificar/${value}`);
+      if (response.data.exists) {
+        setValidacionDocumento(true);
+        setNombreCompleto(response.data.nombreCompleto);
+      } else {
+        setValidacionDocumento(false);
+        setNombreCompleto('');
+      }
+    } catch (error) {
+      console.error('Error al validar el documento:', error);
+      setValidacionDocumento(false); // Manejar el error estableciendo validación en false
+      setNombreCompleto('');
+   
+    }
+  };
+
   // Función para obtener la lista de destinos desde el servidor
   const obtenerDestinos = async () => {
     try {
@@ -188,9 +172,54 @@ const Reservas = () => {
     setSelectedDestino(destinosId);
   };
 
+  // Manejador para obtener la fecha actual y establecerla como fecha de reserva
+  const obtenerFechaActualYSetearReserva = () => {
+    const fechaActual = new Date();
+    const año = fechaActual.getFullYear();
+    const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
+    const día = fechaActual.getDate().toString().padStart(2, '0');
+    const fechaActualFormat = `${año}-${mes}-${día}`;
+    setFechaReserva(fechaActualFormat);
+  };
+
+  const handleFechaSalidaChange = (e) => {
+    const newFechaSalida = e.target.value;
+    const fechaSalidaValidada = new Date(newFechaSalida);
+    const fechaReservaDate = new Date(fechaReserva);
+
+    if (fechaSalidaValidada < fechaReservaDate) {
+      setErrorFechaSalida('La fecha no puede ser menor a la fecha de reserva.');
+    } else if (fechaSalidaValidada.toDateString() === fechaReservaDate.toDateString()) {
+      setErrorFechaSalida('La fecha no puede ser igual a la fecha de reserva.');
+    } else {
+      setFechaSalida(newFechaSalida);
+      setErrorFechaSalida('');
+    }
+  };
+
+  const handleFechaLlegadaChange = (e) => {
+    const newFechaLlegada = e.target.value;
+    const fechaLlegadaValidada = new Date(newFechaLlegada);
+    const fechaReservaDate = new Date(fechaReserva);
+    const fechaSalidaDate = new Date(fechaSalida);
+
+    if (fechaLlegadaValidada < fechaReservaDate) {
+      setErrorFechaLlegada('La fecha de llegada no puede ser inferior a la fecha de reserva.');
+    } else if (fechaLlegadaValidada.toDateString() === fechaSalidaDate.toDateString()) {
+      setErrorFechaLlegada('La fecha de llegada no puede ser igual a la fecha de salida.');
+    } else if (fechaLlegadaValidada.toDateString() === fechaReservaDate.toDateString()) {
+      setErrorFechaLlegada('La fecha de llegada no puede ser igual a la fecha de reserva.');
+    } else {
+      setFechaLlegada(newFechaLlegada);
+      setErrorFechaLlegada('');
+    }
+  };
 
   return (
     <div>
+      <div className=" container" style={{ textAlign: 'left' }}>
+        <Breadcrumbs />
+      </div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -207,45 +236,43 @@ const Reservas = () => {
               <div className="modal-body">
                 <div className='row'>
                   <div className='col-md-6'>
-                    <form onSubmit={actions}>
+                    <form id='reservasForm' onSubmit={actions}>
                       <div className="row">
                         <div className="col-md-6 mb-3">
                           <label htmlFor="validationCustom01" className="form-label">Fecha Reserva</label>
                           <input
-                            type="date"
+                            type="text"
                             className="form-control"
                             id="fechaReserva"
                             value={fechaReserva}
-                            onChange={(e) => {
-                              // Obtener la fecha actual en el formato yyyy-mm-dd
-                              const fechaActual = new Date();
-                              const año = fechaActual.getFullYear();
-                              const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0');
-                              const día = fechaActual.getDate().toString().padStart(2, '0');
-                              const fechaActualFormat = `${año}-${mes}-${día}`;
-
-                              // Actualizar el estado fechaReserva con la fecha actual
-                              setFechaReserva(fechaActualFormat);
-                            }}
+                            readOnly // Hace que el campo sea de solo lectura
+                            onChange={(e) => setFechaReserva(e.target.value)}
                             required
                           />
-
                         </div>
                         <div className="col-md-6 mb-3">
-                          <label htmlFor="documentoCliente" className="form-label">Documento del Cliente</label>
+                          <label htmlFor="documentoTitular" className="form-label">Documento del Responsable</label>
                           <input
                             type="text"
-                            className="form-control"
-                            id="documentoCliente"
-                            value={documentoCliente}
-                            onChange={(e) => setDocumentoCliente(e.target.value)}
-                            required
+                            className={`form-control ${validacionDocumento === true ? 'is-valid' : validacionDocumento === false ? 'is-invalid' : ''}`}
+                            id="documentoTitular"
+                            value={documentotitular}
+                            onBlur={handleDocumentoTitularChange} // Cambio de evento a onBlur
+                            onChange={(e) => setDocumentoTitular(e.target.value)}
+                           
+
                           />
+                          {validacionDocumento === false && ( // Mostrar validación solo si es inválido
+                            <div className="invalid-feedback">Documento no válido.</div>
+                          )}
+                          {validacionDocumento === true && ( // Mostrar validación en verde si es válido
+                            <div className="valid-feedback">Documento válido.</div>
+                          )}
                         </div>
                       </div>
                       <div>
-                        <label htmlFor="nombreCliente" className="form-label">Nombre del Cliente</label>
-                        <input type="text" className="form-control" id="nombreCliente" />
+                        <label htmlFor="documentoTitular" className="form-label">Responsable del Menor</label>
+                        <input type="text" className="form-control" value={nombreCompleto} />
                       </div>
                       <div className="row mt-3">
                         <div className="col-md-6 mb-3">
@@ -255,21 +282,8 @@ const Reservas = () => {
                             className={`form-control ${errorFechaSalida ? 'is-invalid' : ''}`}
                             id="fechaSalida"
                             value={fechaSalida}
-                            onChange={(e) => {
-                              const newFechaSalida = e.target.value;
-                              const fechaSalidaValidada = new Date(newFechaSalida);
-                              const fechaReservaDate = new Date(fechaReserva);
+                            onChange={handleFechaSalidaChange}
 
-                              if (fechaSalidaValidada < fechaReservaDate) {
-                                setErrorFechaSalida('La fecha no puede ser menor a la fecha de reserva.');
-                              } else if (fechaSalidaValidada.toDateString() === fechaReservaDate.toDateString()) {
-                                setErrorFechaSalida('La fecha no puede ser igual a la fecha de reserva.');
-                              } else {
-                                setFechaSalida(newFechaSalida);
-                                setErrorFechaSalida('');
-                              }
-                            }}
-                            required
                           />
                           {errorFechaSalida && <div className="invalid-feedback">{errorFechaSalida}</div>}
                         </div>
@@ -280,28 +294,11 @@ const Reservas = () => {
                             className={`form-control ${errorFechaLlegada ? 'is-invalid' : ''}`}
                             id="fechaLlegada"
                             value={fechaLlegada}
-                            onChange={(e) => {
-                              const newFechaLlegada = e.target.value;
-                              const fechaLlegadaValidada = new Date(newFechaLlegada);
-                              const fechaReservaDate = new Date(fechaReserva);
-                              const fechaSalidaDate = new Date(fechaSalida);
+                            onChange={handleFechaLlegadaChange}
 
-                              if (fechaLlegadaValidada < fechaReservaDate) {
-                                setErrorFechaLlegada('La fecha de llegada no puede ser inferior a la fecha de reserva.');
-                              } else if (fechaLlegadaValidada.toDateString() === fechaSalidaDate.toDateString()) {
-                                setErrorFechaLlegada('La fecha de llegada no puede ser igual a la fecha de salida.');
-                              } else if (fechaLlegadaValidada.toDateString() === fechaReservaDate.toDateString()) {
-                                setErrorFechaLlegada('La fecha de llegada no puede ser igual a la fecha de reserva.');
-                              } else {
-                                setFechaLlegada(newFechaLlegada);
-                                setErrorFechaLlegada('');
-                              }
-                            }}
-                            required
                           />
                           {errorFechaLlegada && <div className="invalid-feedback">{errorFechaLlegada}</div>}
                         </div>
-
                       </div>
                       <div className="row mt-3">
                         <div className="col-md-6 mb-3">
@@ -326,16 +323,8 @@ const Reservas = () => {
                           </select>
                         </div>
                         <div className="col-md-6 mb-3">
-                          <label htmlFor="paquete" className="form-label">Paquete</label>
-                          <select
-                            className="form-select"
-                            id="paquete"
-                          >
-                            <option value="">Selecciona un paquete</option>
-                            <option value="paquete1">Paquete 1</option>
-                            <option value="paquete2">Paquete 2</option>
-                            {/* Agrega más opciones según tus necesidades */}
-                          </select>
+                          <label htmlFor="paqueteSelect">Selecciona un paquete:</label>
+                          <select id="paqueteSelect" name="paquete"></select>
                         </div>
                       </div>
                       {/* Campo para ingresar el documento del cliente */}
@@ -356,7 +345,7 @@ const Reservas = () => {
                         >
                           Cerrar
                         </button>
-                        <button type="submit" className="btn btn-primary"  >Guardar Registro</button>
+                        <button type="submit" className="btn btn-primary">Guardar Registro</button>
                       </div>
                     </form>
                   </div>
@@ -458,7 +447,9 @@ const Reservas = () => {
           </div>
           <div>
             <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} onClick={() => {
-              setIsModalOpen(true); // Abre la modal al hacer clic
+              setIsModalOpen(true); // Abre la modal al hacer clic 
+              cleanData();
+              getData();
             }} title="Haga clic para agregar un nuevo cliente">< i className="fa-solid fa-plus fa-beat "></i></button>
           </div>
         </div>

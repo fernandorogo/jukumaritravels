@@ -1,5 +1,7 @@
 const clientesCtrl = {}
 const clientesModel = require('../models/clientes.model')
+const today = new Date();
+const currentMonth = today.getMonth() + 1; // El mes actual (se suma 1 ya que los meses en JavaScript son 0-indexados)
 
 clientesCtrl.list = async (req, res) => {
     try {
@@ -24,6 +26,63 @@ clientesCtrl.list = async (req, res) => {
         })
     }
 }
+
+clientesCtrl.listall = async (req, res) => {
+    try {
+        const clientes = await clientesModel.find({})
+        const totalClientes = clientes.length; // Obten el número de registros
+        res.json({
+            ok: true,
+            totalClientes, // Agrega el número de registros a la respuesta
+            clientes
+
+        })
+    }
+    catch (error) {
+        res.status(500).json({
+            ok: false,
+            message: error.message
+        })
+    }
+}
+
+clientesCtrl.listByCurrentMonth = async (req, res) => {
+    try {
+        const clientes = await clientesModel.aggregate([
+            {
+                $addFields: {
+                    monthOfBirth: { $month: '$fechanacimientoCliente' }
+                }
+            },
+            {
+                $match: {
+                    monthOfBirth: currentMonth
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    fechanacimientoCliente: 1,
+                    nombre1Cliente: 1,
+                    apellido1Cliente: 1
+                }
+            }
+        ]);
+
+        const totalClientes = clientes.length;
+
+        res.json({
+            ok: true,
+            totalClientes,
+            clientes
+        });
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            message: error.message
+        });
+    }
+};
 
 clientesCtrl.listid = async (req, res) => {
     try {
@@ -147,10 +206,6 @@ clientesCtrl.update = async (req, res) => {
         const estadoCliente = req.body.estadoCliente || cliente.estadoCliente
         const ciudadCliente = req.body.ciudadCliente || cliente.ciudadCliente
 
-
-
-
-
         const clienteUpdate = {
             nombre1Cliente,
             nombre2Cliente,
@@ -169,8 +224,6 @@ clientesCtrl.update = async (req, res) => {
             parentezcoCliente,
             otroParentezco,
             documentoTitular
-
-
         }
 
         await cliente.updateOne(clienteUpdate)

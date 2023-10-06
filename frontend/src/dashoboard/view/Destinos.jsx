@@ -3,6 +3,7 @@ import Pagination from 'rc-pagination';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import Breadcrumbs from '../components/Breadcrumbs ';
 import "./TextResponsive.css";
 
 const Destinos = () => {
@@ -68,7 +69,6 @@ const Destinos = () => {
 
       setTimeout(() => {
         getData();
-
       }, 1000);
 
     } catch (error) {
@@ -123,11 +123,9 @@ const Destinos = () => {
 
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
-
   }
   const closeModal = () => {
     setIsModalOpen(false);
-
   };
 
   const actions = (e) => {
@@ -189,6 +187,9 @@ const Destinos = () => {
 
   return (
     <div>
+      <div className=" container" style={{ textAlign: 'left' }}>
+        <Breadcrumbs/>
+      </div>
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
           <div className="modal-dialog modal-lg" >

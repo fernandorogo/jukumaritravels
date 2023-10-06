@@ -13,7 +13,6 @@ const destinoSchema = new Schema({
     descripcionDestino: {
         type: String
     },
-    categoriadestinos: [{ type: Schema.Types.ObjectId, ref: "categoriadestinos" }]
 },
     {
         timestamps: true,
