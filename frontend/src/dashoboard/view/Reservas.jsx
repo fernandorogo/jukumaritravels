@@ -8,16 +8,13 @@ const Reservas = () => {
   const [fechaReserva, setFechaReserva] = useState('')
   const [fechaSalida, setFechaSalida] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
-  const [documentoCliente, setDocumentoCliente] = useState(''); // Estado para almacenar el documento del cliente
-  const [clienteInfo, setClienteInfo] = useState(null); // Estado para almacenar la información del cliente
+
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   //Fecha error
   const [errorFechaSalida, setErrorFechaSalida] = useState('');
   const [errorFechaLlegada, setErrorFechaLlegada] = useState('');
-
-
 
   useEffect(() => {
     getData();
@@ -30,7 +27,9 @@ const Reservas = () => {
     setFechaSalida('')
     setFechaLlegada('')
     setSelectedDestino('')
-    setClienteInfo(null);
+    setClientes('')
+    setDocumentoCliente('')
+
   }
 
   const getData = async () => {
@@ -42,17 +41,19 @@ const Reservas = () => {
     try {
 
       if (!selectedDestino) {
-        // Mostrar un mensaje de error o tomar alguna acción aquí
+        // Puedes mostrar un mensaje de error o tomar alguna acción aquí
         return;
       }
+
+      // Supongamos que clienteId contiene el _id del cliente que deseas almacenar en clientes
+      const clienteId = clienteData._id;
 
       const newReserva = {
         fechaReserva,
         fechaSalida,
         fechaLlegada,
         destinos: selectedDestino,
-
-
+        clientes: [clienteId] // Agregamos el clienteId al array de clientes
       }
       await axios.post('http://localhost:4000/api/reservas/add', newReserva);
       cleanData()
@@ -78,21 +79,6 @@ const Reservas = () => {
   const actions = async (e) => {
     e.preventDefault();
     saveReserva();
-
-    // Realizar la consulta del cliente por documento
-    try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/${documentoCliente}`);
-      const data = response.data;
-
-      if (data.ok) {
-        setClienteInfo(data.message); // Almacenar la información del cliente
-        saveReserva(); // Llamar a saveReserva después de obtener la información del cliente
-      } else {
-        console.error(data.message);
-      }
-    } catch (error) {
-      console.error('Error al consultar cliente:', error.message);
-    }
   };
 
   // Función para cerrar el modal de edición
@@ -101,33 +87,41 @@ const Reservas = () => {
   };
 
 
-
-
-
-  //codigo nuevo para consultar cliente
-  const consultarCliente = async (documentoCliente) => {
+  //----------------------------------------------------------------
+  const [documentoCliente, setDocumentoCliente] = useState('');
+  const [clientes, setClientes] = useState('')
+  const [clienteData, setClienteData] = useState({});
+  const [loading, setLoading] = useState(true);
+  
+  const fetchClienteData = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/clientes/${documentoCliente}`);
-      const data = response.data;
-
-      if (data.ok) {
-        setClienteInfo(data.message);
-        saveReserva();
+      const response = await axios.get(`/api/clientes/listdocumento/${documentoCliente}`);
+      if (response.status === 200) {
+        const data = response.data;
+  
+        if (data.message && data.message._id) {
+          setClienteData(data.message);
+          setLoading(false);
+          setClientes((prevClientes) => [...prevClientes, { _id: data.message._id, documento: data.message.documento }]);
+        } else {
+          console.error('Cliente no encontrado');
+        }
       } else {
-        console.error(data.message);
+        console.error('Error al obtener datos del cliente');
       }
     } catch (error) {
-      console.error('Error al consultar cliente:', error.message);
+      console.error('Error al conectarse al servidor:', error);
     }
   };
 
-  const completeDataFields = (item) => {
-    setFechaReserva(item.fechaReserva)
-    setFechaSalida(item.fechaSalida)
-    setFechaLlegada(item.fechaLlegada)
-    localStorage.setItem('id', item._id)
 
-  }
+  useEffect(() => {
+    if (documentoCliente) {
+      fetchClienteData();
+    }
+  }, [documentoCliente]);
+
+  //----------------------------------------------------------------
 
   const deleteReserva = async (id) => {
     try {
@@ -232,21 +226,28 @@ const Reservas = () => {
 
                         </div>
                         <div className="col-md-6 mb-3">
-                          <label htmlFor="documentoCliente" className="form-label">Documento del Cliente</label>
+                          <label htmlFor="validationCustom01" className="form-label">Dcoumento cliente</label>
+
                           <input
                             type="text"
                             className="form-control"
-                            id="documentoCliente"
+                            placeholder="Número de documento"
                             value={documentoCliente}
                             onChange={(e) => setDocumentoCliente(e.target.value)}
-                            required
                           />
                         </div>
                       </div>
                       <div>
                         <label htmlFor="nombreCliente" className="form-label">Nombre del Cliente</label>
-                        <input type="text" className="form-control" id="nombreCliente" />
+                        <input
+                          className='form-control'
+                          type="text"
+                          readOnly
+                          value={documentoCliente ? (loading ? 'Cargando...' : `${clienteData.nombre1Cliente} ${clienteData.nombre2Cliente} ${clienteData.apellido1Cliente} ${clienteData.apellido2Cliente}`) : ''}
+                        />
                       </div>
+
+
                       <div className="row mt-3">
                         <div className="col-md-6 mb-3">
                           <label htmlFor="fechaSalida" className="form-label">Fecha Salida</label>
@@ -425,7 +426,7 @@ const Reservas = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
       {/* Fin del formulario*/}
 
 
@@ -534,7 +535,7 @@ const Reservas = () => {
         ))}
       </div>
       {/* Fin de la tabla de Reservas*/}
-    </div>
+    </div >
 
 
 

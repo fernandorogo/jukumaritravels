@@ -108,6 +108,31 @@ clientesCtrl.listid = async (req, res) => {
 
 }
 
+clientesCtrl.listByDocumento = async (req, res) => {
+    try {
+        const { documentoCliente } = req.params; // Supongo que el documentoCliente es un parámetro en la ruta
+        const cliente = await clientesModel.findOne({ documentoCliente });
+
+        if (!cliente) {
+            return res.status(404).json({
+                ok: false,
+                message: 'Cliente no encontrado'
+            });
+        }
+
+        const nombreCompleto = `${cliente.nombre1Cliente} ${cliente.nombre2Cliente} ${cliente.apellido1Cliente} ${cliente.apellido2Cliente}`;
+        console.log(cliente);
+
+        return res.json({ ok: true, message: cliente, nombreCompleto });
+    } catch (error) {
+        return res.status(500).json({
+            ok: false,
+            message: error.message
+        });
+    }
+};
+
+
 clientesCtrl.add = async (req, res) => {
     try {
         const {

@@ -3,7 +3,7 @@ const reservasModel = require('../models/reservas.model')
 
 reservasCtrl.list = async (req, res) => {
     try {
-        const reservas = await reservasModel.find().populate("clientes", { nombre1Cliente: 1 }).populate("paquetesturisticos");
+        const reservas = await reservasModel.find();
         res.json({
             ok: true,
             reservas
@@ -37,21 +37,23 @@ reservasCtrl.listall = async (req, res) => {
 
 reservasCtrl.listallByFechaSalida = async (req, res) => {
     try {
-        const reservas = await reservasModel.find().sort({ fechaSalida: 1 }).populate('destinos', 'nombreDestino');// Ordenar por fecha de salida ascendente
-        const totalReservas = reservas.length;
-
-        res.json({
-            ok: true,
-            totalReservas,
-            reservas
-        });
+      const reservas = await reservasModel
+        .find()
+        .sort({ fechaSalida: 1 })
+        .select('fechaSalida destinos');
+  
+      res.json({
+        ok: true,
+        reservas,
+      });
     } catch (error) {
-        res.status(500).json({
-            ok: false,
-            message: error.message
-        });
+      res.status(500).json({
+        ok: false,
+        message: error.message,
+      });
     }
-};
+  };
+  
 
 
 
@@ -78,15 +80,14 @@ reservasCtrl.listid = async (req, res) => {
 }
 reservasCtrl.add = async (req, res) => {
     try {
-        const { fechaReserva, fechaSalida, fechaLlegada, pasajeros, clientes, paquetesturisticos, destinos } = req.body
+        const { fechaReserva, fechaSalida, fechaLlegada, pasajeros, clientes, destinos } = req.body
         const newReserva = new reservasModel({
             fechaReserva,
             fechaSalida,
             fechaLlegada,
             pasajeros,
-            clientes,
             destinos,
-            paquetesturisticos
+            clientes
         });
         await newReserva.save();
         res.json({
@@ -117,7 +118,7 @@ reservasCtrl.update = async (req, res) => {
         const fechaSalida = req.body.fechaSalida || reserva.fechaSalida
         const fechaLlegada = req.body.fechaLlegada || reserva.fechaLlegada
         const pasajeros = req.body.pasajeros || reserva.pasajeros
-        const clientes = req.body.clientes || reserva.clientes
+        const documentoCliente = req.body.documentoCliente || reserva.documentoCliente
         const destinos = req.body.destinos || reserva.destinos
         const paquetesturisticos = req.body.paquetesturisticos || reserva.paquetesturisticos
 
@@ -126,7 +127,7 @@ reservasCtrl.update = async (req, res) => {
             fechaSalida,
             fechaLlegada,
             pasajeros,
-            clientes,
+            documentoCliente,
             destinos,
             paquetesturisticos
         }
