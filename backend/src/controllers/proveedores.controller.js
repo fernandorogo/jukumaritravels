@@ -40,7 +40,8 @@ proveedoresCtrl.listid = async (req, res) => {
 }
 proveedoresCtrl.add = async (req, res) => {
     try {
-        const { tipodocumentoProveedor, documentoProveedor, razonsocialProveedor, nombre1Proveedor, nombre2Proveedor, apellido1Proveedor, apellido2Proveedor, tipoProveedor, telefono1Proveedor, telefono2Proveedor, whatsappProveedor, correoelectronicoProveedor, pais, departamento, municipio, direccion } = req.body
+        const {  documentoProveedor, razonsocialProveedor, tipoProveedor, telefono1Proveedor, telefono2Proveedor, whatsappProveedor, correoelectronicoProveedor,  paisCliente,
+            estadoCliente,ciudadCliente, direccion } = req.body
 
         const verificar = await proveedoresModel.findOne({ documentoProveedor });
         if (verificar) {
@@ -51,21 +52,17 @@ proveedoresCtrl.add = async (req, res) => {
         }
 
         const newProveedor = new proveedoresModel({
-            tipodocumentoProveedor,
+            
             documentoProveedor,
             razonsocialProveedor,
-            nombre1Proveedor,
-            nombre2Proveedor,
-            apellido1Proveedor,
-            apellido2Proveedor,
             tipoProveedor,
             telefono1Proveedor,
             telefono2Proveedor,
             whatsappProveedor,
             correoelectronicoProveedor,
-            pais,
-            departamento,
-            municipio,
+            paisCliente,
+            estadoCliente,
+            ciudadCliente,
             direccion
 
 
@@ -95,39 +92,31 @@ proveedoresCtrl.update = async (req, res) => {
             })
         }
 
-        const tipodocumentoProveedor = req.body.tipodocumentoProveedor || proveedor.tipodocumentoProveedor
+    
         const documentoProveedor = req.body.documentoProveedor || proveedor.documentoProveedor
         const razonsocialProveedor = req.body.razonsocialProveedor || proveedor.razonsocialProveedor
-        const nombre1Proveedor = req.body.nombre1Proveedor || proveedor.nombre1Proveedor
-        const nombre2Proveedor = req.body.nombre2Proveedor || proveedor.nombre2Proveedor
-        const apellido1Proveedor = req.body.apellido1Proveedor || proveedor.apellido1Proveedor
-        const apellido2Proveedor = req.body.apellido2Proveedor || proveedor.apellido2Proveedor
         const tipoProveedor = req.body.tipoProveedor || proveedor.tipoProveedor
         const telefono1Proveedor = req.body.telefono1Proveedor || proveedor.telefono1Proveedor
         const telefono2Proveedor = req.body.telefono2Proveedor || proveedor.telefono2Proveedor
         const whatsappProveedor = req.body.whatsappProveedor || proveedor.whatsappProveedor
         const correoelectronicoProveedor = req.body.correoelectronicoProveedor || proveedor.correoelectronicoProveedor
-        const pais = req.body.pais || proveedor.pais
-        const departamento = req.body.departamento || proveedor.departamento
-        const municipio = req.body.municipio || proveedor.municipio
+        const paisCliente = req.body.paisCliente || proveedor.paisCliente
+        const estadoCliente = req.body.estadoCliente || proveedor.estadoCliente
+        const ciudadCliente = req.body.ciudadCliente || proveedor.ciudadCliente
         const direccion = req.body.direccion || proveedor.direccion
 
         const proveedorUpdate = {
-            tipodocumentoProveedor,
+            
             documentoProveedor,
             razonsocialProveedor,
-            nombre1Proveedor,
-            nombre2Proveedor,
-            apellido1Proveedor,
-            apellido2Proveedor,
             tipoProveedor,
             telefono1Proveedor,
             telefono2Proveedor,
             whatsappProveedor,
             correoelectronicoProveedor,
-            pais,
-            departamento,
-            municipio,
+            paisCliente,
+            estadoCliente,
+            ciudadCliente,
             direccion
 
 

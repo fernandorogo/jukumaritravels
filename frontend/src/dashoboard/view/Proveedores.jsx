@@ -9,18 +9,14 @@ import Breadcrumbs from '../components/Breadcrumbs ';
 
 const Proveedores = () => {
   const [proveedores, setProveedores] = useState([])
-  const [tipodocumentoProveedor, setTipodocumentoProveedor] = useState('NIT')
   const [documentoProveedor, setDocumentoProveedor] = useState('')
   const [razonsocialProveedor, setRazonsocialProveedor] = useState('')
-  const [nombre1Proveedor, setNombre1Proveedor] = useState('')
-  const [nombre2Proveedor, setNombre2Proveedor] = useState('')
-  const [apellido1Proveedor, setApellido1Proveedor] = useState('')
-  const [apellido2Proveedor, setApellido2Proveedor] = useState('')
   const [tipoProveedor, setTipoProveedor] = useState('')
   const [telefono1Proveedor, setTelefono1Proveedor] = useState('')
   const [telefono2Proveedor, setTelefono2Proveedor] = useState('')
   const [whatsappProveedor, setWhatsappProveedor] = useState('')
   const [correoelectronicoProveedor, setCorreoelectronicoProveedor] = useState('')
+  const [direccion, setDireccion] = useState('')
 
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +25,17 @@ const Proveedores = () => {
   const [totalPages, setTotalPages] = useState('')
 
  
-
+  const [paisCliente, setPaisCliente] = useState('');
+  const [estadoCliente, setEstadoCliente] = useState('');
+  const [ciudadCliente, setCiudadCliente] = useState('');
+  //----------------------------------------------------------------
+  // Estos estados y cambios de estado son relacionados con los Select o listas desplegables
+  const [paises, setPaises] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
+  const [paisSeleccionado, setPaisSeleccionado] = useState("");
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
+  const [ciudadSeleccionada, setCiudadSeleccionada] = useState("");
 
 
 
@@ -37,24 +43,28 @@ const Proveedores = () => {
 
   useEffect(() => {
     getData(page);
+    obtenerPaises();
     //fetchProveedores();
   }, [page]);
 
   const cleanData = () => {
     setProveedores('')
-    setTipodocumentoProveedor('')
     setDocumentoProveedor('')
     setRazonsocialProveedor('')
-    setNombre1Proveedor('')
-    setNombre2Proveedor('')
-    setApellido1Proveedor('')
-    setApellido2Proveedor('')
     setTipoProveedor('')
     setTelefono1Proveedor('')
     setTelefono2Proveedor('')
     setWhatsappProveedor('')
     setCorreoelectronicoProveedor('')
+    setDireccion('')
 
+    setPaisCliente('');
+    setEstadoCliente('');
+    setCiudadCliente('');
+    
+    setPaisSeleccionado('');
+    setEstadoSeleccionado('');
+    setCiudadSeleccionada('');
 
 
     setEdit(false);
@@ -75,18 +85,18 @@ const Proveedores = () => {
   const saveProveedor = async () => {
     try {
       const newProveedor = {
-        tipodocumentoProveedor,
         documentoProveedor,
         razonsocialProveedor,
-        nombre1Proveedor,
-        nombre2Proveedor,
-        apellido1Proveedor,
-        apellido2Proveedor,
         tipoProveedor,
         telefono1Proveedor,
         telefono2Proveedor,
         whatsappProveedor,
         correoelectronicoProveedor,
+        direccion,
+
+        paisCliente,
+        estadoCliente,
+        ciudadCliente,
 
       }
       await axios.post('/api/proveedores/', newProveedor);
@@ -119,22 +129,25 @@ const Proveedores = () => {
     try {
       const id = localStorage.getItem('id');
       const newProveedor = {
-        tipodocumentoProveedor,
         documentoProveedor,
         razonsocialProveedor,
-        nombre1Proveedor,
-        nombre2Proveedor,
-        apellido1Proveedor,
-        apellido2Proveedor,
         tipoProveedor,
         telefono1Proveedor,
         telefono2Proveedor,
         whatsappProveedor,
         correoelectronicoProveedor,
+        direccion,
+        paisCliente,
+        estadoCliente,
+        ciudadCliente,
 
       };
 
       const { data } = await axios.put('/api/proveedores/' + id, newProveedor);
+
+      setPaisSeleccionado(paisCliente);
+      setEstadoSeleccionado(estadoCliente);
+      setCiudadSeleccionada(ciudadCliente);
 
       cleanData();
       getData();
@@ -156,18 +169,18 @@ const Proveedores = () => {
   const editData = (item) => {
 
     setEdit(true);
-    setTipodocumentoProveedor(item.tipodocumentoProveedor)
     setDocumentoProveedor(item.documentoProveedor)
     setRazonsocialProveedor(item.razonsocialProveedor)
-    setNombre1Proveedor(item.nombre1Proveedor)
-    setNombre2Proveedor(item.nombre2Proveedor)
-    setApellido1Proveedor(item.apellido1Proveedor)
-    setApellido2Proveedor(item.apellido2Proveedor);
-    setTipoProveedor(item.tipoproveedor)
+    setTipoProveedor(item.tipoProveedor)
     setTelefono1Proveedor(item.telefono1Proveedor)
     setTelefono2Proveedor(item.telefono2Proveedor)
     setWhatsappProveedor(item.whatsappProveedor);
     setCorreoelectronicoProveedor(item.correoelectronicoProveedor)
+    setDireccion(item.direccion)
+    
+    setPaisCliente(item.paisCliente || '');
+    setEstadoCliente(item.estadoCliente || '');
+    setCiudadCliente(item.ciudadCliente || '');
 
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
@@ -213,6 +226,55 @@ const Proveedores = () => {
 
   
 
+  const obtenerPaises = async () => {
+    try {
+      const response = await axios.get("/api/paises/listall");
+      console.log("Lista de paises:", response);
+      setPaises(response.data.paises);
+    } catch (error) {
+      console.error("Error al obtener la lista de países:", error);
+    }
+  };
+
+  const handlePaisChange = (paisId) => {
+    setPaisSeleccionado(paisId);
+    setPaisCliente(paisId); // Almacenar en paisCliente
+    obtenerEstadosPorPais(paisId);
+  };
+
+  const handleEstadoChange = (estadoId) => {
+    setEstadoSeleccionado(estadoId);
+    setEstadoCliente(estadoId); // Almacenar en estadoCliente
+    obtenerCiudadesPorEstado(estadoId);
+  };
+
+  const handleCiudadChange = (ciudadId) => {
+    setCiudadSeleccionada(ciudadId);
+    setCiudadCliente(ciudadId); // Almacenar en ciudadCliente
+  };
+
+  const obtenerEstadosPorPais = async (paisId) => {
+    try {
+      const response = await axios.get(`/api/paises/listid/${paisId}`);
+      setEstados(response.data.estados || []);
+      setEstadoSeleccionado('');
+      setCiudadSeleccionada('');
+    } catch (error) {
+      console.error("Error al obtener los estados por país:", error);
+      setEstados([]);
+    }
+  };
+
+  const obtenerCiudadesPorEstado = async (estadoId) => {
+    try {
+      const response = await axios.get(`/api/estados/listid/${estadoId}`);
+      setCiudades(response.data.ciudades || []);
+      setCiudadSeleccionada('');
+    } catch (error) {
+      console.error("Error al obtener las ciudades por estado", error);
+      setCiudades([]);
+    }
+  };
 
 
 
@@ -240,80 +302,44 @@ const Proveedores = () => {
               <div className="modal-body">
                 <form id='proveedorForm' onSubmit={actions}>
                   <div className="row g-3">
-                  <div className="col-md-3">
-                      <label htmlFor="tipoDocumento" className="form-label">Tipo Documento</label>
-                      <select className="form-select" id="tipoDocumento"
-                        value={tipodocumentoProveedor}
-                        onChange={(e) => setTipodocumentoProveedor(e.target.value)}
-                        required>
-                        <option disabled value="">Elige...</option>
-                        <option value="CC">CEDULA DE CIUDADANIA</option>
-                        <option value="NIT">NIT</option>
-                      </select>
-                      <div className="invalid-feedback">Selecciona un estado válido.</div>
-                    </div>
+                  
                     <div className="col-md-3">
-                      <label htmlFor="segundoNombre" className="form-label">Documento </label>
+                      <label htmlFor="segundoNombre" className="form-label">Número de NIT </label>
                       <input type="number" className="form-control" id="segundoNombre"
                         value={documentoProveedor}
                         onChange={(e) => setDocumentoProveedor(e.target.value.toUpperCase())}
+                        required
                       />
                     </div>
-                    <div className="col-md-3">
-                      <label htmlFor="primerApellido" className="form-label">Razon Social</label>
+                    <div className="col-md-6">
+                      <label htmlFor="primerApellido" className="form-label">Razón Social</label>
                       <input type="text" className="form-control" id="primerApellido"
                         value={razonsocialProveedor}
                         onChange={(e) => setRazonsocialProveedor(e.target.value.toUpperCase())}
                         required />
                     </div>
+                   
                     <div className="col-md-3">
-                      <label htmlFor="segundoApellido" className="form-label">Primer Nombre</label>
-                      <input type="text" className="form-control" id="segundoApellido"
-                        value={nombre1Proveedor}
-                        onChange={(e) => setNombre1Proveedor(e.target.value.toUpperCase())}
-                      />
-                    </div>
-                    <div className="col-md-3">
-                      <label htmlFor="segundoApellido" className="form-label">Segundo Nombre</label>
-                      <input type="text" className="form-control" id="segundoApellido"
-                        value={nombre2Proveedor}
-                        onChange={(e) => setNombre2Proveedor(e.target.value.toUpperCase())}
-                      />
-                    </div>
-                    <div className="col-md-3">
-                      <label htmlFor="segundoApellido" className="form-label">Primer Apellido</label>
-                      <input type="text" className="form-control" id="segundoApellido"
-                        value={apellido1Proveedor}
-                        onChange={(e) => setApellido1Proveedor(e.target.value.toUpperCase())}
-                      />
-                    </div>
-                    <div className="col-md-3">
-                      <label htmlFor="segundoApellido" className="form-label">Segundo Apellido</label>
-                      <input type="text" className="form-control" id="segundoApellido"
-                        value={apellido2Proveedor}
-                        onChange={(e) => setApellido2Proveedor(e.target.value.toUpperCase())}
-                      />
-                    </div>
-                    <div className="col-md-3">
-                      <label htmlFor="segundoApellido" className="form-label">Tipo proveedor</label>
-                      <input type="text" className="form-control" id="segundoApellido"
+                      <label htmlFor="tipoproveedor" className="form-label">Tipo proveedor</label>
+                      <input type="text" className="form-control" id="tipoproveedor"
                         value={tipoProveedor}
                         onChange={(e) => setTipoProveedor(e.target.value.toUpperCase())}
+                        required
                       />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="telefono1" className="form-label">Telefono 1</label>
+                      <label htmlFor="telefono1" className="form-label">Teléfono 1</label>
                       <input type="number" className="form-control" id="telefono1"
                         value={telefono1Proveedor}
                         onChange={(e) => setTelefono1Proveedor(e.target.value)}
                         required />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="telefono1" className="form-label">Telefono 2</label>
+                      <label htmlFor="telefono1" className="form-label">Teléfono 2</label>
                       <input type="number" className="form-control" id="telefono1"
                         value={telefono2Proveedor}
                         onChange={(e) => setTelefono2Proveedor(e.target.value)}
-                        required />
+                      />
                     </div>
                     <div className="col-md-3">
                       <label htmlFor="telefono1" className="form-label">Whatsapp</label>
@@ -327,14 +353,61 @@ const Proveedores = () => {
                     
                     
                     <div className="col-md-3">
-                      <label htmlFor="correoElectronico" className="form-label">Correo Electronico</label>
+                      <label htmlFor="correoElectronico" className="form-label">Correo Electrónico</label>
                       <input type="email" className="form-control" id="correoElectronico"
                         value={correoelectronicoProveedor}
                         onChange={(e) => setCorreoelectronicoProveedor(e.target.value)}
                         required />
                     </div>
+
                     
-                    
+                    <div className="col-md-3">
+                      <label htmlFor="direccionPrincipal" className="form-label">País</label>
+                      <select className="form-select" value={edit ? paisCliente : paisSeleccionado} onChange={(e) => handlePaisChange(e.target.value)}>
+                        <option value="">Selecciona un país</option>
+                        {paises.map((paises) => (
+                          <option key={paises.idPais} value={paises.idPais}>{paises.nombrePais}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-3">
+                      <label htmlFor="direccionPrincipal" className="form-label">Estado</label>
+                      <select className="form-select" value={edit ? estadoCliente : estadoSeleccionado} onChange={(e) => handleEstadoChange(e.target.value)}>
+                        <option value="">Selecciona un estado</option>
+                        {estados.map((estados) => (
+                          <option key={estados.idEstado} value={estados.idEstado}  >{estados.nombreEstado}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-3">
+                      <label htmlFor="direccionPrincipal" className="form-label">Ciudad</label>
+                      <select className="form-select" value={edit ? ciudadCliente : ciudadSeleccionada} onChange={(e) => handleCiudadChange(e.target.value)}>
+                        <option value="">Selecciona una ciudad</option>
+                        {ciudades.map((ciudades) => (
+                          <option key={ciudades.idCiudad} value={ciudades.idCiudad}>{ciudades.nombreCiudad}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-3">
+                      <label htmlFor="direccion" className="form-label">Dirección</label>
+                      <input type="text" className="form-control" id="primerApellido"
+                        value={direccion}
+                        onChange={(e) => setDireccion(e.target.value.toUpperCase())}
+                        required />
+                    </div>
+
+
+
+
+
+
+
+
+
+
+
+
                     
                     {/* ... (código existente) ... */}
                     <div className="modal-footer border-5">
@@ -405,13 +478,12 @@ const Proveedores = () => {
               <thead>
                 <tr style={{ background: "#008cba", color: "#ffffff" }}>
                   <th scope="col" className="responsive-text">#</th>
-                  <th scope="col" className="responsive-text">Tipo documento</th>
-                  <th scope="col" className="responsive-text">Documento</th>
-                  <th scope="col" className="responsive-text">Razon Social</th>
-                  <th scope="col" className="responsive-text">Primer Nombre</th>
-                  <th scope="col" className="responsive-text">Segundo Nombre</th>
-                  <th scope="col" className="responsive-text">Primer Apellido</th>
-                  <th scope="col" className="responsive-text">Segundo Apellido</th>
+                  <th scope="col" className="responsive-text">NIT</th>
+                  <th scope="col" className="responsive-text">Razón Social</th>
+                  <th scope="col" className="responsive-text">Tipo Proveedor</th>
+                  <th scope="col" className="responsive-text">Télefono</th>
+                  <th scope="col" className="responsive-text">Correo electrónico</th>
+                  
                   <th scope="col" className="responsive-text">Acciones</th>
                 </tr>
               </thead>
@@ -419,13 +491,12 @@ const Proveedores = () => {
                 {Array.isArray(proveedores) && proveedores.map((item, i) => (
                   <tr key={item._id}>
                     <td className="responsive-text"> {i + 1}</td>
-                    <td className="responsive-text"> {item.tipodocumentoProveedor} </td>
                     <td className="responsive-text"> {item.documentoProveedor} </td>
                     <td className="responsive-text"> {item.razonsocialProveedor} </td>
-                    <td className="responsive-text"> {item.nombre1Proveedor}</td>
-                    <td className="responsive-text"> {item.nombre2Proveedor}</td>
-                    <td className="responsive-text"> {item.apellido1Proveedor}</td>
-                    <td className="responsive-text"> {item.apellido2Proveedor}</td>
+                    <td className="responsive-text"> {item.tipoProveedor} </td>
+                    <td className="responsive-text"> {item.telefono1Proveedor} </td>
+                    <td className="responsive-text"> {item.correoelectronicoProveedor} </td>
+        
                     <td>
                       <div className="btn-group btn-group-sm" role="group">
                         <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}>
@@ -459,7 +530,7 @@ const Proveedores = () => {
                 <strong></strong>
               </p>
               <div className='btn-group btn-group-xl'>
-                <span className='btn btn-primary d-flex align-items-center me-2'>
+                <span className='btn btn-primary d-flex align-items-center me-2'  onClick={() => editData(item)}>
                   <i className="fa-solid fa-pencil space-i"></i>
                 </span>
                 <span className='btn btn-danger d-flex align-items-center'

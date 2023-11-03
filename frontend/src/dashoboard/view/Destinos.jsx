@@ -223,7 +223,7 @@ const Destinos = () => {
                     </div>
 
                     <div className="mb-3">
-                      <label htmlFor="exampleFormControlTextarea1" className="form-label">Descripcion del destino</label>
+                      <label htmlFor="exampleFormControlTextarea1" className="form-label">Descripción del destino</label>
                       <textarea className="form-control" id="exampleFormControlTextarea1" rows="3"
                         value={descripcionDestino}
                         onChange={(e) => setdescripcionDestino(e.target.value.toUpperCase())}
@@ -305,7 +305,7 @@ const Destinos = () => {
                   <th scope="col" className="responsive-text">#</th>
                   <th scope="col" className="responsive-text">Nombre Destino</th>
                   <th scope="col" className="responsive-text">Ubicación</th>
-                  <th scope="col" className="responsive-text">Descripcion del destino</th>
+                  <th scope="col" className="responsive-text">Descripción del destino</th>
                   <th scope="col" className="responsive-text">Acciones</th>
                 </tr>
               </thead >
@@ -344,7 +344,7 @@ const Destinos = () => {
                 <p className='card-text'>
                   <strong>Nombre destino:</strong> {item.nombreDestino}<br />
                   <strong>Ubicación:</strong> {item.ubicacion}<br />
-                  <strong>Descripcion del destino:</strong> {item.ubicacion}<br />
+                  <strong>Descripción del destino:</strong> {item.ubicacion}<br />
                 </p>
                 <div className='btn-group btn-group-xl'>
                   <span className='btn btn-primary d-flex align-items-center me-2'

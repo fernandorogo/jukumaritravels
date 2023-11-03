@@ -2,14 +2,18 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import Breadcrumbs from '../components/Breadcrumbs ';
+import Pasajeros from './Pasajeros';
+
+
 
 const Reservas = () => {
   const [reservas, setReservas] = useState([])
   const [fechaReserva, setFechaReserva] = useState('')
   const [fechaSalida, setFechaSalida] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
-
-
+  const [npasajeros, setNPasajeros] = useState('')
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   //Fecha error
@@ -19,6 +23,10 @@ const Reservas = () => {
   useEffect(() => {
     getData();
     obtenerDestinos();
+    obtenerPaquetesturisticos();
+    fetchClientes();
+
+
   }, []);
 
   const cleanData = () => {
@@ -26,10 +34,13 @@ const Reservas = () => {
     setFechaReserva('')
     setFechaSalida('')
     setFechaLlegada('')
+    setNPasajeros('')
     setSelectedDestino('')
-    setClientes('')
+    setSelectedPaquete('')
+    //setClientes('')
     setDocumentoCliente('')
-
+    setNombreCompleto('')
+    setValidacionDocumento('')
   }
 
   const getData = async () => {
@@ -40,25 +51,28 @@ const Reservas = () => {
   const saveReserva = async () => {
     try {
 
-      if (!selectedDestino) {
+      if (!selectedDestino || !selectedPaquete) {
         // Puedes mostrar un mensaje de error o tomar alguna acción aquí
         return;
       }
 
       // Supongamos que clienteId contiene el _id del cliente que deseas almacenar en clientes
-      const clienteId = clienteData._id;
+      const clienteId = clientes[0]._id;
 
       const newReserva = {
         fechaReserva,
         fechaSalida,
         fechaLlegada,
+        npasajeros,
         destinos: selectedDestino,
+        paquetesturisticos: selectedPaquete,
         clientes: [clienteId] // Agregamos el clienteId al array de clientes
+
       }
       await axios.post('http://localhost:4000/api/reservas/add', newReserva);
-      cleanData()
+
       getData();
-      closeModal();
+
 
       // SweetAlert2 para mostrar éxito
       Swal.fire({
@@ -87,41 +101,74 @@ const Reservas = () => {
   };
 
 
-  //----------------------------------------------------------------
-  const [documentoCliente, setDocumentoCliente] = useState('');
-  const [clientes, setClientes] = useState('')
-  const [clienteData, setClienteData] = useState({});
-  const [loading, setLoading] = useState(true);
-  
-  const fetchClienteData = async () => {
+  //-----------------------Validacion de Cliente--------------------------------
+  const [validacionDocumento, setValidacionDocumento] = useState(null);
+  const [nombreCompleto, setNombreCompleto] = useState('');
+  const [documentoCliente, setDocumentoCliente] = useState('')
+  const [clientes, setClientes] = useState([]);
+  const [documentoClienteMapeo, setDocumentoClienteMapeo] = useState({});
+
+
+
+  // Esta funcion permite hacer una consulta Get al servidor buscando un id de cliente
+  const fetchClientes = async () => {
+    fetch('/api/clientes')
+      .then(response => response.text())
+      .catch(error => console.error('Error fetching clientes:', error));
+  };
+
+  // Este codigo valida si el documento del Titular exite en la base de datos de Clientes
+  const handleDocumentoClienteChange = async (e) => {
+    const value = e.target.value;
+    setDocumentoCliente(value);
+
     try {
-      const response = await axios.get(`/api/clientes/listdocumento/${documentoCliente}`);
-      if (response.status === 200) {
-        const data = response.data;
-  
-        if (data.message && data.message._id) {
-          setClienteData(data.message);
-          setLoading(false);
-          setClientes((prevClientes) => [...prevClientes, { _id: data.message._id, documento: data.message.documento }]);
-        } else {
-          console.error('Cliente no encontrado');
+      const response = await axios.get(`/api/clientes/verificar/${value}`);
+      if (response.data.exists) {
+        const { clienteId, documentoCliente, nombreCompleto } = response.data;
+        setValidacionDocumento(true);
+        setNombreCompleto(nombreCompleto);
+
+        // Aquí se verifica si el cliente ya existe en el arreglo de clientes
+        const existingClient = clientes.find(cliente => cliente._id === clienteId);
+
+        if (!existingClient) {
+          // Si el cliente no existe en el arreglo, lo agregamos
+          setClientes([...clientes, { _id: clienteId, documentoCliente: documentoCliente }]);
         }
+
+        // Puedes hacer más cosas aquí con los clientes si es necesario
       } else {
-        console.error('Error al obtener datos del cliente');
+        setValidacionDocumento(false);
+        setNombreCompleto('');
       }
     } catch (error) {
-      console.error('Error al conectarse al servidor:', error);
+      console.error('Error al validar el documento:', error);
+      setValidacionDocumento(false);
+      setNombreCompleto('');
     }
   };
 
-
   useEffect(() => {
-    if (documentoCliente) {
-      fetchClienteData();
-    }
-  }, [documentoCliente]);
+    // Obtener la lista de clientes desde el servidor
+    axios.get('/api/clientes/listall')
+      .then((response) => {
+        const clientesData = response.data.clientes;
+        setClientes(clientesData);
 
-  //----------------------------------------------------------------
+        // Crear un mapeo de _id a documentoCliente
+        const mapeo = {};
+        clientesData.forEach((cliente) => {
+          mapeo[cliente._id] = cliente.documentoCliente;
+        });
+        setDocumentoClienteMapeo(mapeo);
+      })
+      .catch((error) => {
+        console.error('Error al obtener la lista de clientes:', error);
+      });
+  }, []);
+
+  //-----------------------------Eliminar Registro------------------------------
 
   const deleteReserva = async (id) => {
     try {
@@ -176,15 +223,66 @@ const Reservas = () => {
     }
   };
 
-
   //Función para manejar el cambio de destino
   const handleDestinoChange = (destinosId) => {
     setSelectedDestino(destinosId);
   };
 
+  //----------------Todo sobre los paquetes turisticos--------------------------
+  // Estados relacionados con paquetesturisticos
+  const [paquetesturisticos, setPaquetesturisticos] = useState([]);
+  const [selectedPaquete, setSelectedPaquete] = useState("");
+  const [paqueteNombres, setPaqueteNombres] = useState({});
+
+  // Función para obtener la lista de paquetesturisticos desde el servidor
+  const obtenerPaquetesturisticos = async () => {
+    try {
+      const response = await axios.get("/api/paquetes/listall");
+      console.log("Lista de paquetesturisticos:", response);
+      const paquetesturisticosData = response.data.paquetesturisticos;
+      setPaquetesturisticos(paquetesturisticosData);
+
+      // Crear un mapeo de _id a nombres
+      const nombresPaquete = {};
+      paquetesturisticosData.forEach((paquete) => {
+        nombresPaquete[paquete._id] = paquete.nombrePaqueteTuristico;
+      });
+
+      setPaqueteNombres(nombresPaquete);
+    } catch (error) {
+      console.error("Error al obtener la lista de paquetesturisticos:", error);
+    }
+  };
+
+  // Función para manejar el cambio de paquete
+  const handlePaqueteChange = (paqueteId) => {
+    console.log("Paquete seleccionado:", paqueteId);
+    setSelectedPaquete(paqueteId);
+  };
+
+  //----------------------------------------------------------------
+
+  // Esta función agrega una nueva fila al estado de pasajeros en Pasajeros.jsx
+  const handleAddClienteRow = () => {
+    // Crea una nueva fila de cliente con valores iniciales
+    const newCliente = {
+      documentoCliente: "",
+      nombreCliente: "",
+      validacionDocumento: null,
+    };
+
+    // Agrega la nueva fila al estado de pasajeros
+    setClientes([...clientes, newCliente]);
+  };
+
+  //----------------------------------------------------------------
+
 
   return (
     <div>
+      <div className=" container" style={{ textAlign: 'left' }}>
+        <Breadcrumbs />
+      </div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -223,30 +321,47 @@ const Reservas = () => {
                             }}
                             required
                           />
-
                         </div>
                         <div className="col-md-6 mb-3">
                           <label htmlFor="validationCustom01" className="form-label">Dcoumento cliente</label>
-
+                          <input
+                            type="text"
+                            className={`form-control ${validacionDocumento === true ? 'is-valid' : validacionDocumento === false ? 'is-invalid' : ''}`}
+                            id="documentoCliente"
+                            value={documentoCliente}
+                            onBlur={handleDocumentoClienteChange} // Cambio de evento a onBlur
+                            onChange={(e) => setDocumentoCliente(e.target.value)}
+                            required
+                          />
+                          {validacionDocumento === false && ( // Mostrar validación solo si es inválido
+                            <div className="invalid-feedback">Documento no válido.</div>
+                          )}
+                          {validacionDocumento === true && ( // Mostrar validación en verde si es válido
+                            <div className="valid-feedback">Documento válido.</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className='row'>
+                        <div className='col-md-9'>
+                          <label htmlFor="nombreCliente" className="form-label">Nombre del Cliente</label>
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="Número de documento"
-                            value={documentoCliente}
-                            onChange={(e) => setDocumentoCliente(e.target.value)}
+                            value={nombreCompleto}
+                            onChange={(e) => setNombreCompleto(e.target.value)} // Agregar el manejador de cambio
+                            readOnly
                           />
                         </div>
-                      </div>
-                      <div>
-                        <label htmlFor="nombreCliente" className="form-label">Nombre del Cliente</label>
-                        <input
-                          className='form-control'
+                        <div className="col-md-3 mb-3">
+                          <label htmlFor="paquete" className="form-label"># Pasajeros: </label>
+                          <input 
+                          className="form-control" 
                           type="text"
-                          readOnly
-                          value={documentoCliente ? (loading ? 'Cargando...' : `${clienteData.nombre1Cliente} ${clienteData.nombre2Cliente} ${clienteData.apellido1Cliente} ${clienteData.apellido2Cliente}`) : ''}
-                        />
+                          value={npasajeros} 
+                          onChange={(e) => setNPasajeros(e.target.value)} />
+                        </div>
+                       
                       </div>
-
 
                       <div className="row mt-3">
                         <div className="col-md-6 mb-3">
@@ -325,22 +440,31 @@ const Reservas = () => {
                               </option>
                             )}
                           </select>
+
                         </div>
                         <div className="col-md-6 mb-3">
                           <label htmlFor="paquete" className="form-label">Paquete</label>
                           <select
                             className="form-select"
-                            id="paquete"
+                            value={selectedPaquete}
+                            onChange={(e) => handlePaqueteChange(e.target.value)}
                           >
-                            <option value="">Selecciona un paquete</option>
-                            <option value="paquete1">Paquete 1</option>
-                            <option value="paquete2">Paquete 2</option>
-                            {/* Agrega más opciones según tus necesidades */}
+                            <option value="">Seleccione un paquete</option>
+                            {Array.isArray(paquetesturisticos) && paquetesturisticos.length > 0 ? (
+                              paquetesturisticos.map((paquete) => (
+                                <option key={paquete._id} value={paquete._id}>
+                                  {paquete.nombrePaqueteTuristico}
+                                </option>
+                              ))
+                            ) : (
+                              <option value="" disabled>
+                                Cargando paquetes turísticos...
+                              </option>
+                            )}
                           </select>
                         </div>
                       </div>
                       {/* Campo para ingresar el documento del cliente */}
-
 
                       {/* ... Resto del formulario ... */}
                       <div className="modal-footer">
@@ -350,8 +474,6 @@ const Reservas = () => {
                           onClick={() => {
                             getData(); // Carga los datos actualizados
                             cleanData(); // Limpia los campos del formulario
-                            closeModal();
-
                           }}
                           data-bs-dismiss="modal"
                         >
@@ -361,65 +483,10 @@ const Reservas = () => {
                       </div>
                     </form>
                   </div>
-                  <div className="col-md-6">
-                    <table className="table table-bordered border-1 table-hover mt-2">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Documento</th>
-                          <th scope="col">Pasajeros</th>
-                          <th scope="col">Acción</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td><input type="text" className="form-control"
-                          /></td>
+                  <div className='col-md-6'>
 
-                          <td>
-                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td>
-                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
-                            </button>
-                          </td>
+                    <Pasajeros />
 
-                        </tr>
-                        <tr>
-                          <th scope="row">3</th>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td>
-                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
-                            </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">4</th>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td><input type="text" className="form-control"
-                          /></td>
-                          <td>
-                            <button type="button" className="btn btn-primary rounded-circle aling-end" style={{ backgroundColor: "#008cba" }} title="Haga clic para agregar un nuevo item del pauete">< i className="fa-solid fa-plus fa-beat "></i>
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               </div>
@@ -474,8 +541,10 @@ const Reservas = () => {
                   <th scope="col" className="responsive-text">Fecha Reserva</th>
                   <th scope="col" className="responsive-text">Fecha Salida</th>
                   <th scope="col" className="responsive-text">Fecha de Regreso</th>
-                  <th scope="col" className="responsive-text"> Cliente</th>
+                  <th scope="col" className="responsive-text">Cliente</th>
+                  <th scope="col" className="responsive-text">NPasajeros</th>
                   <th scope="col" className="responsive-text">Destino</th>
+                  <th scope="col" className="responsive-text">Paquetes</th>
                   <th scope="col" className="responsive-text">Acciones</th>
                 </tr>
               </thead>
@@ -486,10 +555,16 @@ const Reservas = () => {
                     <td className="responsive-text"> {item.fechaReserva.slice(0, 10)} </td>
                     <td className="responsive-text"> {item.fechaSalida.slice(0, 10)} </td>
                     <td className="responsive-text"> {item.fechaLlegada.slice(0, 10)} </td>
-                    <td className="responsive-text">{item.clientes}</td>
+                    <td className="responsive-text">{documentoClienteMapeo[item.clientes] || 'Cliente no encontrado'}</td>
+                    <td className="responsive-text">{item.npasajeros}</td>
+
                     <td className="responsive-text">{destinoNombres[item.destinos]}</td>
+                    <td className="responsive-text">{paqueteNombres[item.paquetesturisticos]}</td>
                     <td>
                       <div className="btn-group btn-group-sm" role="group">
+                      <span className='btn btn-warning d-flex align-items-center me-2'>
+                          <i className="fa-solid fa-user"></i>
+                        </span>
                         <span className='btn btn-primary d-flex align-items-center me-2'>
                           <i className="fa-solid fa-pencil space-i"></i>
                         </span>

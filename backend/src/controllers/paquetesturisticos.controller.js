@@ -1,6 +1,7 @@
 const paquetesturisticosCtrl = {}
 const paquetesturisticosModel = require('../models/paquetesturisticos.model')
 
+
 paquetesturisticosCtrl.list = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 5;
@@ -24,6 +25,21 @@ paquetesturisticosCtrl.list = async (req, res) => {
     }
 };
 
+paquetesturisticosCtrl.listall = async (req, res) => {
+    try {
+      const paquetesturisticos = await paquetesturisticosModel.find({});
+      res.json({
+        ok: true,
+        paquetesturisticos,
+      });
+    } catch (error) {
+      res.status(500).json({
+        ok: false,
+        message: error.message,
+      });
+    }
+  };
+
 paquetesturisticosCtrl.listid = async (req, res) => {
     try {
         const { id } = req.params;
@@ -45,23 +61,47 @@ paquetesturisticosCtrl.listid = async (req, res) => {
     }
 };
 
-paquetesturisticosCtrl.listidDestino = async (req, res) => {
+paquetesturisticosCtrl.listDestinos = async (req, res) => {
     try {
-      const idDestino = req.params.idDestino;
+      const destinos = await paquetesturisticosModel.distinct('destinos');
   
-      // Realiza una consulta en la base de datos para buscar paquetes turísticos con el destino especificado
-      const paquetes = await PaqueteTuristico.find({ destinos: idDestino });
-  
-      if (!paquetes || paquetes.length === 0) {
-        return res.status(404).json({ message: 'No se encontraron paquetes turísticos para el destino especificado.' });
-      }
-  
-      res.json(paquetes);
+      res.json({
+        ok: true,
+        destinos,
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Error en el servidor' });
+      res.status(500).json({
+        ok: false,
+        message: error.message,
+      });
     }
   };
+
+paquetesturisticosCtrl.listByDestinoOrder = async (req, res) => {
+  try {
+    // Realiza una consulta para obtener todos los paquetes turísticos y ordenarlos por destino
+    const paquetes = await paquetesturisticosModel
+      .find({})
+      .populate('destinos') // Asegúrate de que el campo coincida con el nombre de la referencia en tu modelo de paquetes turísticos
+      .sort('destinos.nombreDestino'); // Ordena por el campo 'nombreDestino' del modelo de destinos
+
+    if (!paquetes || paquetes.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron paquetes turísticos.' });
+    }
+    const response = {
+        destino: paquetes[0].destinos, // Tomamos el primer destino ya que todos los paquetes tendrán el mismo destino
+        paquetes: paquetes
+      };
+
+      
+
+    res.json(paquetes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+};
 
 paquetesturisticosCtrl.add = async (req, res) => {
     try {

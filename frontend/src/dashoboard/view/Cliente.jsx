@@ -4,8 +4,8 @@ import Pagination from 'rc-pagination';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import "./TextResponsive.css";
 import Breadcrumbs from '../components/Breadcrumbs ';
+import "./TextResponsive.css";
 
 const Cliente = () => {
   const [clientes, setClientes] = useState([])
@@ -84,6 +84,8 @@ const Cliente = () => {
     setparentezcoCliente('')
     setOtroParentezco('')
     setdocumentoTitular('')
+    setValidacionDocumento('')
+    setNombreCompleto('')
 
     setPaisSeleccionado('');
     setEstadoSeleccionado('');
@@ -143,7 +145,7 @@ const Cliente = () => {
         showConfirmButton: false,
         timer: 1500
       });
-      
+
     } catch (error) {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
@@ -196,7 +198,7 @@ const Cliente = () => {
         showConfirmButton: false,
         timer: 1500
       });
-      
+
     } catch (error) {
       if (!error.response.data.ok) {
         return alert(error.response.data.message)
@@ -235,7 +237,7 @@ const Cliente = () => {
     handleEstadoChange(item.estadoCliente)
     setCiudadSeleccionada(item.ciudadCliente || '');
     handleCiudadChange(item.ciudadCliente)
-    
+
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
 
@@ -307,8 +309,8 @@ const Cliente = () => {
   };
 
   // Esta funcion da el formato de fecha de luxon https://moment.github.io/luxon
-  const formattedDate = fechanacimientoCliente.slice(0, 10); 
-  
+  const formattedDate = fechanacimientoCliente.slice(0, 10);
+
 
 
   //Esta funcion permite que al seleccionar la opcion Otro en la listaa de parentesco, se muestre el input de otro
@@ -432,7 +434,7 @@ const Cliente = () => {
   return (
     <div>
       <div className=" container" style={{ textAlign: 'left' }}>
-        <Breadcrumbs/>
+        <Breadcrumbs />
       </div>
       {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
@@ -451,7 +453,7 @@ const Cliente = () => {
                 <form id='clienteForm' onSubmit={actions}>
                   <div className="row g-3">
                     <div className="col-md-3">
-                      <label htmlFor="primerNombre" className="form-label">Primer Nombre</label>
+                      <label htmlFor="primerNombre" className="form-label">Primer Nombre<span className="text-danger red-asterisk">*</span></label>
                       <input type="text" className="form-control" id="primerNombre"
                         value={nombre1Cliente}
                         onChange={(e) => setnombre1Cliente(e.target.value.toUpperCase())}
@@ -467,7 +469,7 @@ const Cliente = () => {
                       />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="primerApellido" className="form-label">Primer Apellido</label>
+                      <label htmlFor="primerApellido" className="form-label">Primer Apellido<span className="text-danger red-asterisk">*</span></label>
                       <input type="text" className="form-control" id="primerApellido"
                         value={apellido1Cliente}
                         onChange={(e) => setapellido1Cliente(e.target.value.toUpperCase())}
@@ -481,7 +483,7 @@ const Cliente = () => {
                       />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="tipoDocumento" className="form-label">Tipo Documento</label>
+                      <label htmlFor="tipoDocumento" className="form-label">Tipo Documento<span className="text-danger red-asterisk">*</span></label>
                       <select className="form-select" id="tipoDocumento"
                         value={tipodocumentoCliente}
                         onChange={(e) => settipodocumentoCliente(e.target.value)}
@@ -489,21 +491,21 @@ const Cliente = () => {
                         <option disabled value="">Elige...</option>
                         <option value="RC">REGISTRO CIVIL</option>
                         <option value="TI">TARJETA DE IDENTIAD</option>
-                        <option value="CC">CEDULA DE CIUDADANIA</option>
-                        <option value="PASS">PASSAPORTE</option>
-                        <option value="CE">CEDULA DE EXTRANJERIA</option>
+                        <option value="CC">CÉDULA DE CIUDADANIA</option>
+                        <option value="PASS">PASAPORTE</option>
+                        <option value="CE">CÉDULA DE EXTRANJERIA</option>
                       </select>
                       <div className="invalid-feedback">Selecciona un estado válido.</div>
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="numIdentificacion" className="form-label">Numero de Identificación</label>
+                      <label htmlFor="numIdentificacion" className="form-label">Número de Identificación<span className="text-danger red-asterisk">*</span></label>
                       <input type="text" className="form-control" id="numIdentificacion"
                         value={documentoCliente}
                         onChange={(e) => setdocumentoCliente(e.target.value)}
                         required />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="fechaNacimiento" className="form-label">Fecha de Nacimiento</label>
+                      <label htmlFor="fechaNacimiento" className="form-label">Fecha de Nacimiento<span className="text-danger red-asterisk">*</span></label>
                       <input
                         type="date"
                         className={`form-control ${fechaError ? 'is-invalid' : ''}`}
@@ -512,25 +514,25 @@ const Cliente = () => {
                         onChange={handleFechaChange}
                         required
                       />
-                      
+
                       {fechaError && <div className="invalid-feedback">{fechaError}</div>}
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="correoElectronico" className="form-label">Correo Electronico</label>
+                      <label htmlFor="correoElectronico" className="form-label">Correo Electrónico<span className="text-danger red-asterisk">*</span></label>
                       <input type="email" className="form-control" id="correoElectronico"
                         value={correoelectronicoCliente}
                         onChange={(e) => setcorreoelectronicoCliente(e.target.value)}
                         required />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="telefono1" className="form-label">Telefono 1</label>
+                      <label htmlFor="telefono1" className="form-label">Teléfono 1<span className="text-danger red-asterisk">*</span></label>
                       <input type="text" className="form-control" id="telefono1"
                         value={telefono1Cliente}
                         onChange={(e) => settelefono1Cliente(e.target.value)}
                         required />
                     </div>
                     <div className="col-md-3">
-                      <label htmlFor="telefono2" className="form-label">Telefono 2</label>
+                      <label htmlFor="telefono2" className="form-label">Teléfono 2</label>
                       <input type="text" className="form-control" id="telefono2"
                         value={telefono2Cliente}
                         onChange={(e) => settelefono2Cliente(e.target.value)}
@@ -538,7 +540,7 @@ const Cliente = () => {
                     </div>
 
                     <div className="col-md-6">
-                      <label htmlFor="direccionPrincipal" className="form-label">Dirección principal</label>
+                      <label htmlFor="direccionPrincipal" className="form-label">Dirección principal<span className="text-danger red-asterisk">*</span></label>
                       <input type="text" className="form-control" id="direccionPrincipal"
                         value={direccionCliente}
                         onChange={(e) => setdireccionCliente(e.target.value.toUpperCase())}
@@ -548,7 +550,7 @@ const Cliente = () => {
                     </div>
                     {/*Aqui inicia los select de Ciudad, Estado y Pais */}
                     <div className="col-md-3">
-                      <label htmlFor="direccionPrincipal" className="form-label">Pais</label>
+                      <label htmlFor="direccionPrincipal" className="form-label">País</label>
                       <select className="form-select" value={edit ? paisCliente : paisSeleccionado} onChange={(e) => handlePaisChange(e.target.value)}>
                         <option value="">Selecciona un país</option>
                         {paises.map((paises) => (
@@ -587,7 +589,7 @@ const Cliente = () => {
                     {esMenorEdad === 'SI' && (
                       <>
                         <div className="col-md-3 mb-3">
-                          <label htmlFor="parentezco" className="form-label">Parentezco</label>
+                          <label htmlFor="parentezco" className="form-label">Parentezco<span className="text-danger red-asterisk">*</span></label>
                           <select className="form-select" id="parentezco" value={parentezcoCliente} onChange={handleParentezcoChange} required>
                             <option defaultValue disabled value="">Elige...</option>
                             <option>Madre</option>
@@ -612,7 +614,7 @@ const Cliente = () => {
                           </div>
                         )}
                         <div className="col-md-3 mb-3">
-                          <label htmlFor="documentoTitular" className="form-label">Documento del Responsable</label>
+                          <label htmlFor="documentoTitular" className="form-label">Documento del Responsable<span className="text-danger red-asterisk">*</span></label>
                           <input
                             type="text"
                             className={`form-control ${validacionDocumento === true ? 'is-valid' : validacionDocumento === false ? 'is-invalid' : ''}`}
@@ -710,14 +712,14 @@ const Cliente = () => {
               <thead>
                 <tr style={{ background: "#008cba", color: "#ffffff" }}>
                   <th scope="col" className="responsive-text">#</th>
-                  <th scope="col" className="responsive-text">Nombre1</th>
-                  <th scope="col" className="responsive-text">Nombre2</th>
-                  <th scope="col" className="responsive-text">Apellido1</th>
-                  <th scope="col" className="responsive-text">Apellido2</th>
-                  <th scope="col" className="responsive-text">Tipo</th>
-                  <th scope="col" className="responsive-text">Documento</th>
+                  <th scope="col" className="responsive-text">Primer nombre</th>
+                  <th scope="col" className="responsive-text">Segundo nombre</th>
+                  <th scope="col" className="responsive-text">Primer apellido</th>
+                  <th scope="col" className="responsive-text">Segundo apellido</th>
+                  <th scope="col" className="responsive-text">Tipo documento</th>
+                  <th scope="col" className="responsive-text">Número documento</th>
                   <th scope="col" className="responsive-text">Email</th>
-                  <th scope="col" className="responsive-text">Telefono1</th>
+                  <th scope="col" className="responsive-text">Teléfono </th>
                   <th scope="col" className="responsive-text">Titular</th>
                   <th scope="col">Acciones</th>
                 </tr>
@@ -774,7 +776,7 @@ const Cliente = () => {
                   <strong></strong>
                 </p>
                 <div className='btn-group btn-group-xl'>
-                  <span className='btn btn-primary d-flex align-items-center me-2'>
+                  <span className='btn btn-primary d-flex align-items-center me-2'  onClick={() => editData(item)}>
                     <i className="fa-solid fa-pencil space-i"></i>
                   </span>
                   <span className='btn btn-danger d-flex align-items-center'

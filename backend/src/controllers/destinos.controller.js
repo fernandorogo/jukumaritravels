@@ -28,22 +28,22 @@ destinosCtrl.list = async (req, res) => {
 
 destinosCtrl.listall = async (req, res) => {
     try {
-      const destinos = await destinosModel.find();
-      const totalDestinos = destinos.length; // Obten el número de destinos
-  
-      res.json({
-        ok: true,
-        totalDestinos, // Agrega el número de destinos a la respuesta
-        destinos,
-      });
+        const destinos = await destinosModel.find({}, 'nombreDestino');
+        const totalDestinos = destinos.length; // Obten el número de destinos
+
+        res.json({
+            ok: true,
+            totalDestinos, // Agrega el número de destinos a la respuesta
+            destinos,
+        });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        message: error.message,
-      });
+        res.status(500).json({
+            ok: false,
+            message: error.message,
+        });
     }
-  };
-  
+};
+
 destinosCtrl.listid = async (req, res) => {
     try {
         const { id } = req.params
@@ -65,9 +65,10 @@ destinosCtrl.listid = async (req, res) => {
     }
 
 }
+
 destinosCtrl.add = async (req, res) => {
     try {
-        const { nombreDestino, ubicacion, descripcionDestino} = req.body
+        const { nombreDestino, ubicacion, descripcionDestino } = req.body
 
         const verificar = await destinosModel.findOne({ nombreDestino });
         if (verificar) {

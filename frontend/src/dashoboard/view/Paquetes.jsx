@@ -329,7 +329,6 @@ const Paquetes = () => {
       <div className=" container" style={{ textAlign: 'left' }}>
         <Breadcrumbs/>
       </div>
-      
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
           <div className="modal-dialog modal-xl">

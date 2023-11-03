@@ -299,8 +299,13 @@ clientesCtrl.verificarDocumento = async (req, res) => {
 
         // Enviar respuesta al frontend si el cliente fue encontrado o no
         if (clienteEncontrado) {
+
+            // Capturar el _id y el documento del cliente
+            const clienteId = clienteEncontrado._id;
+            const documentoCliente = clienteEncontrado.documentoCliente;
+
             const nombreCompleto = `${clienteEncontrado.nombre1Cliente} ${clienteEncontrado.nombre2Cliente} ${clienteEncontrado.apellido1Cliente} ${clienteEncontrado.apellido2Cliente}`;
-            res.json({ exists: true, nombreCompleto }); // Cliente encontrado
+            res.json({ exists: true, nombreCompleto, clienteId, documentoCliente }); // Cliente encontrado
         } else {
             res.json({ exists: false }); // Cliente no encontrado
         }

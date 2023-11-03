@@ -2,10 +2,7 @@ const { Schema, model } = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 
 const proveedorSchema = new Schema({
-    tipodocumentoProveedor: {
-        type: String,
-        required: true
-    },
+
     documentoProveedor: {
         type: Number,
         required: true
@@ -13,21 +10,6 @@ const proveedorSchema = new Schema({
     razonsocialProveedor: {
         type: String,
         requied: true
-    },
-    nombre1Proveedor: {
-        type: String,
-        required: true
-    },
-    nombre2Proveedor: {
-        type: String
-    },
-    apellido1Proveedor: {
-        type: String,
-        required: true
-    },
-    apellido2Proveedor: {
-        type: String,
-        required: true
     },
     tipoProveedor: {
         type: String,
@@ -53,21 +35,22 @@ const proveedorSchema = new Schema({
         required: true
 
     },
-    pais: {
-        type: String,
-      
+    paisCliente: {
+        type: Number,
     },
-    departamento: {
-        type: String
+    estadoCliente: {
+        type: Number,
     },
-    municipio: {
-        type: String
+    ciudadCliente: {
+        type: Number,
     },
     direccion: {
         type: String,
-       
-    }
+        required: true
 
+    },
+
+    
 
 },
     {

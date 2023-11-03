@@ -14,8 +14,8 @@ const reservaSchema = new Schema({
         type: Date
     },
 
-    pasajeros: {
-        type: String,
+    npasajeros: {
+        type: Number
     },
 
     clientes: [{type: Schema.Types.ObjectId, ref: 'clientes' }],

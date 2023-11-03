@@ -80,13 +80,14 @@ reservasCtrl.listid = async (req, res) => {
 }
 reservasCtrl.add = async (req, res) => {
     try {
-        const { fechaReserva, fechaSalida, fechaLlegada, pasajeros, clientes, destinos } = req.body
+        const { fechaReserva, fechaSalida, fechaLlegada, npasajeros, clientes, destinos, paquetesturisticos } = req.body
         const newReserva = new reservasModel({
             fechaReserva,
             fechaSalida,
             fechaLlegada,
-            pasajeros,
+            npasajeros,
             destinos,
+            paquetesturisticos,
             clientes
         });
         await newReserva.save();
@@ -117,7 +118,7 @@ reservasCtrl.update = async (req, res) => {
         const fechaReserva = req.body.fechaReserva || reserva.fechaReserva
         const fechaSalida = req.body.fechaSalida || reserva.fechaSalida
         const fechaLlegada = req.body.fechaLlegada || reserva.fechaLlegada
-        const pasajeros = req.body.pasajeros || reserva.pasajeros
+        const npasajeros = req.body.npasajeros || reserva.npasajeros
         const documentoCliente = req.body.documentoCliente || reserva.documentoCliente
         const destinos = req.body.destinos || reserva.destinos
         const paquetesturisticos = req.body.paquetesturisticos || reserva.paquetesturisticos
@@ -126,7 +127,7 @@ reservasCtrl.update = async (req, res) => {
             fechaReserva,
             fechaSalida,
             fechaLlegada,
-            pasajeros,
+            npasajeros,
             documentoCliente,
             destinos,
             paquetesturisticos
