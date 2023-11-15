@@ -1,5 +1,6 @@
 const reservasCtrl = {}
 const reservasModel = require('../models/reservas.model')
+const pasajerosdelareservaModel = require('../models/pasajerosdelareserva.model')
 
 reservasCtrl.list = async (req, res) => {
     try {
@@ -37,23 +38,23 @@ reservasCtrl.listall = async (req, res) => {
 
 reservasCtrl.listallByFechaSalida = async (req, res) => {
     try {
-      const reservas = await reservasModel
-        .find()
-        .sort({ fechaSalida: 1 })
-        .select('fechaSalida destinos');
-  
-      res.json({
-        ok: true,
-        reservas,
-      });
+        const reservas = await reservasModel
+            .find()
+            .sort({ fechaSalida: 1 })
+            .select('fechaSalida destinos');
+
+        res.json({
+            ok: true,
+            reservas,
+        });
     } catch (error) {
-      res.status(500).json({
-        ok: false,
-        message: error.message,
-      });
+        res.status(500).json({
+            ok: false,
+            message: error.message,
+        });
     }
-  };
-  
+};
+
 
 
 
@@ -80,7 +81,8 @@ reservasCtrl.listid = async (req, res) => {
 }
 reservasCtrl.add = async (req, res) => {
     try {
-        const { fechaReserva, fechaSalida, fechaLlegada, npasajeros, clientes, destinos, paquetesturisticos } = req.body
+        let reservaId
+        const { fechaReserva, fechaSalida, fechaLlegada, npasajeros, clientes, destinos, paquetesturisticos, clientesExtras } = req.body
         const newReserva = new reservasModel({
             fechaReserva,
             fechaSalida,
@@ -90,7 +92,19 @@ reservasCtrl.add = async (req, res) => {
             paquetesturisticos,
             clientes
         });
-        await newReserva.save();
+        await newReserva.save().then(savedReserva => {
+            reservaId = savedReserva.id
+            console.log(reservaId);
+        });
+        clientesExtras.forEach(async (element) => {
+            const newPasajeroReserva = new pasajerosdelareservaModel(
+                {
+                    clientes:element,
+                    reservas:reservaId
+                }
+            )
+            await newPasajeroReserva.save()
+        });
         res.json({
             ok: true,
             newReserva
