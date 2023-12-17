@@ -1,19 +1,19 @@
 import React from 'react';
-import Navibar from '../components/Navibar';
 import image1 from '../assets/images/image1.png';
 import step1 from '../assets/images/step1.png';
 import step2 from '../assets/images/step2.png';
 import step3 from '../assets/images/step3.png';
-import carrousel1 from "../image/carrousel1.jpg"
-import carrousel2 from "../image/carrousel2.jpg"
-import carrousel3 from "../image/carrousel3.jpg"
-import carrousel4 from "../image/carrousel4.jpg"
+import Navibar from '../components/Navibar';
+import carrousel1 from "../image/carrousel1.jpg";
+import carrousel2 from "../image/carrousel2.jpg";
+import carrousel3 from "../image/carrousel3.jpg";
+import carrousel4 from "../image/carrousel4.jpg";
 import videoplaya from '../image/videoplaya720.mp4';
 import MapContainer from '../view/MapContainer';
 
 
-import Footer from '../components/Footer'
 import { Link } from 'react-router-dom';
+import Footer from '../components/Footer';
 
 const Page = () => {
 

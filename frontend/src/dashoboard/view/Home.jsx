@@ -29,7 +29,7 @@ const Home = () => {
 
   // Función para obtener el total de destinos
   const fetchTotalDestinos = () => {
-    axios.get('/api/destinos/listall')
+    axios.get('/api/destinos/listAll')
       .then(response => {
         const data = response.data;
         if (data.ok) {

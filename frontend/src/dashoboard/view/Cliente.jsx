@@ -137,7 +137,7 @@ const Cliente = () => {
       await axios.post('/api/clientes/', newCliente);
       cleanData();
       getData();
-
+      closeModal();
       // SweetAlert2 para mostrar éxito
       Swal.fire({
         icon: 'success',

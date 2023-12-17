@@ -7,6 +7,10 @@ const app = express();
 //configurando o asigna un puerto para nuestro servidor
 app.set("Port", 4000);
 //el morgan nos sirve para saber que tipo de dato de peticiones esta recibiendo nuestro servidor
+
+
+app.use ("/public", express.static(__dirname + "/storage/imgs"))
+
 app.use(morgan("dev"));
 //express json, nos sirve para convertir los datos en objetos json y leerlos 
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +30,7 @@ app.use('/api/proveedores', require('./routes/proveedores.route'));
 app.use('/api/paises', require('./routes/pais.route'));
 app.use('/api/estados', require('./routes/estado.route'));
 app.use('/api/ciudades', require('./routes/ciudad.route'));
+
 
 
 //Inicando nuestro servidor

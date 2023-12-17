@@ -1,36 +1,86 @@
 import axios from 'axios';
 import Pagination from 'rc-pagination';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import Breadcrumbs from '../components/Breadcrumbs ';
 import "./TextResponsive.css";
 
 const Destinos = () => {
   const [destinos, setDestinos] = useState([])
-  const [nombreDestino, setnombreDestino] = useState('')
-  const [ubicacion, setubicacion] = useState('')
-  const [descripcionDestino, setdescripcionDestino] = useState('')
-  //Edit & Update
+  const { id } = useParams();
+  const [nombreDestino, setNombreDestino] = useState('')
+  const [ubicacionDestino, setUbicacionDestino] = useState('')
+  const [descripcionDestino, setDescripcionDestino] = useState('')
+  const [image, setImage] = useState('')
+  const [preview, setPreview] = useState('')
+  const [uploadState, setUploadState] = useState(0)
+  const [loading, setLoading] = useState(false)
+
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // SearchTerm
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredDestinos, setfilteredDestinos] = useState([]);
-  // Paginacion
-  const [page, setPage] = useState(1);
+
+  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState('')
 
+
+  const options = {
+    onUploadProgress: (ProgressEvent) => {
+      const { loaded, total } = ProgressEvent;
+      let percent = parseInt((loaded * 100) / total);
+      setUploadState(percent);
+    },
+  };
+
+
   useEffect(() => {
+    const searchPostById = async () => {
+      try {
+        const { data } = await axios.get("/api/destinos/listid/" + id);
+        setNombreDestino(data.destino.nombreDestino);
+        setUbicacionDestino(data.destino.ubicacionDestino);
+        setDescripcionDestino(data.destino.descripcionDestino);
+        setPreview(data.destino.img);
+      } catch (error) {
+        if (!error.response.data.ok) {
+          return alert(error.response.data.mensaje);
+        }
+        console.log('error en la funcion searchPostById', error.message);
+      }
+    };
+    id ? searchPostById() :
+      setNombreDestino("");
+    setUbicacionDestino("");
+    setDescripcionDestino("");
+    setPreview("");
     getData(page);
     fetchDestinos();
-  }, [page]);
+  }, [page, id]);
+
+  const actions = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    image !== "" && formData.append("img", image);
+    formData.append("nombreDestino", nombreDestino);
+    formData.append("ubicacionDestino", ubicacionDestino);
+    formData.append("descripcionDestino", descripcionDestino);
+
+    // Aquí necesitas obtener el ID del localStorage u otra fuente
+    const id = localStorage.getItem('id'); // Asegúrate de tener un ID válido
+
+    edit ? updateDestino(id, formData) : saveDestino(formData);
+
+  };
 
   const cleanData = () => {
     setDestinos('')
-    setnombreDestino('')
-    setubicacion('')
-    setdescripcionDestino('')
+    setNombreDestino('')
+    setUbicacionDestino('')
+    setDescripcionDestino('')
+    setImage('')
+    setPreview('')
 
     setEdit(false);
   }
@@ -44,95 +94,77 @@ const Destinos = () => {
   };
 
   const onchangePage = (page) => {
-    getData(page);
+    getData(page)
   }
 
-  const saveDestino = async () => {
+
+
+  const saveDestino = async (datos) => {
     try {
-      const newDestino = {
-        nombreDestino,
-        ubicacion,
-        descripcionDestino
-      }
-      await axios.post('/api/destinos/', newDestino);
-      cleanData();
-      getData();
-      closeModal();
-
-      // SweetAlert2 para mostrar éxito
-      Swal.fire({
-        icon: 'success',
-        title: 'Destino guardado exitosamente',
-        showConfirmButton: false,
-        timer: 1500
-      });
-
-      setTimeout(() => {
-        getData();
-      }, 1000);
-
-    } catch (error) {
-      if (error.response && !error.response.data.ok) {
+      setLoading(true);
+      const { data } = await axios.post('/api/destinos/add', datos, options);
+      setLoading(false);
+      data.ok &&
         Swal.fire({
-          icon: 'error',
-          title: 'Error al guardar el destino',
-          text: error.response.data.message
+          icon: 'success',
+          text: 'El destino se guardo correctamente',
+          showConfirmButton: false,
+          timer: 1500,
         });
-      } else {
-        console.log('error en saveDestino', error.message);
-      }
-    }
-  }
-
-  const updateDestino = async () => {
-    try {
-      const id = localStorage.getItem('id');
-      const newDestino = {
-        nombreDestino,
-        ubicacion,
-        descripcionDestino
-
-      }
-
-      const { data } = await axios.put('/api/destinos/' + id, newDestino);
       cleanData();
       getData();
       closeModal();
-
-      // SweetAlert2 para mostrar éxito
-      Swal.fire({
-        icon: 'success',
-        title: data.message,
-        showConfirmButton: false,
-        timer: 1500
-      });
-
     } catch (error) {
       if (!error.response.data.ok) {
-        return alert(error.response.data.message)
+        return alert(error.response.data.mensaje);
       }
-      console.log('error en saveDestino', error.message);
-
+      console.log('error en la funcion saveDestino', error.message);
     }
-  }
+  };
+
   const editData = (item) => {
+    console.log('ID:', item._id); // Agregar esta línea para imprimir el ID
     setEdit(true);
-    setnombreDestino(item.nombreDestino)
-    setubicacion(item.ubicacion)
-    setdescripcionDestino(item.descripcionDestino)
+    setNombreDestino(item.nombreDestino || '');
+    setUbicacionDestino(item.ubicacionDestino || '');
+    setDescripcionDestino(item.descripcionDestino || '');
+    setImage(item.image || '');
+    setPreview(item.img || '');
 
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
+  };
+
+  const updateDestino = async (id, datos) => {
+    try {
+      setLoading(true)
+      console.log('ID antes de la solicitud PUT:', id); // Agregar esta línea para imprimir el ID antes de la solicitud PUT
+      // le faltaba el / despues de la palabra update
+      const { data } = await axios.put(`/api/destinos/update/${id}`, datos, options);
+      setLoading(false)
+      Swal.fire({
+        icon: 'success',
+        text: data.mensaje,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      cleanData();
+      getData();
+      closeModal();
+
+    } catch (error) {
+      if (!error.response.data.ok) {
+        return alert(error.response.data.mensaje);
+      }
+      console.log('error en la funcion updateDestino', error.message);
+    }
   }
+
   const closeModal = () => {
     setIsModalOpen(false);
-  };
-
-  const actions = (e) => {
-    e.preventDefault();
-    edit ? updateDestino() : saveDestino();
 
   };
+
 
   const deleteDestino = async (id) => {
     try {
@@ -164,6 +196,7 @@ const Destinos = () => {
     }
   }
 
+
   const fetchDestinos = async () => {
     fetch('api/destinos')
       .then(response => response.text())
@@ -171,8 +204,7 @@ const Destinos = () => {
   };
 
   const searchFields = [
-    'nombreDestino',
-    'ubicacion'
+    'nombreDestino'
   ];
 
   const handleSearch = (e) => {
@@ -185,14 +217,33 @@ const Destinos = () => {
     setfilteredDestinos(filtered)
   }
 
+  const validarFormato = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const imagen = e.target.files[0]
+      if (!/\.(jpeg|jpg|png|svg|JPG|PNG|SVG)$/.test(imagen.name)) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "El archivo a adjuntar no es un formato valido"
+        });
+        e.target.value = "";
+      } else {
+        setImage(imagen);
+        setPreview(URL.createObjectURL(imagen));
+      }
+    }
+  }
+
+
   return (
     <div>
-      <div className=" container" style={{ textAlign: 'left' }}>
-        <Breadcrumbs/>
-      </div>
+      {/* Inicio del formulario*/}
       <div className='container-md mt-5'>
+
+
+        {/* <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"> */}
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
-          <div className="modal-dialog modal-lg" >
+          <div className="modal-dialog modal-lg">
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header" style={{ backgroundColor: "#008cba" }}>
@@ -204,31 +255,44 @@ const Destinos = () => {
                   }} />
                 </div>
                 <div className="modal-body">
-                  <form onSubmit={actions}>
+                  <form id='destinosForm' onSubmit={actions}>
                     <div className="col-md-12">
-                      <label htmlFor="validationCustom01" className="form-label"> Nombre Destino</label>
+                      {/* prev img */}
+                      {preview !== "" && (
+                        <img src={preview} className="card-img-top" alt="prev" />
+                      )}
+                      <label htmlFor="validationCustom01" className="form-label"> Nombre del Destino</label>
                       <input type="text" className="form-control" id="nombreDestino"
-                        value={nombreDestino} onChange={(e) => setnombreDestino(e.target.value.toUpperCase())}
-                        maxLength={20}
+                        value={nombreDestino}
+                        onChange={(e) => setNombreDestino(e.target.value.toUpperCase())}
+                        maxLength={30}
                         required />
                     </div>
-
                     <div className="col-md-12">
-                      <label htmlFor="ubicacion" className="form-label">Ubicación</label>
-                      <input type="text" className="form-control" id="ubicacion"
-                        value={ubicacion}
-                        onChange={(e) => setubicacion(e.target.value.toUpperCase())}
+                      <label htmlFor="ubicacionDestino" className="form-label">Ubicación</label>
+                      <input type="text" className="form-control" id="ubicacionDestino"
+                        value={ubicacionDestino}
+                        onChange={(e) => setUbicacionDestino(e.target.value.toUpperCase())}
                         required
                       />
                     </div>
 
                     <div className="mb-3">
-                      <label htmlFor="exampleFormControlTextarea1" className="form-label">Descripción del destino</label>
+                      <label htmlFor="exampleFormControlTextarea1" className="form-label">Descripcion del destino</label>
                       <textarea className="form-control" id="exampleFormControlTextarea1" rows="3"
                         value={descripcionDestino}
-                        onChange={(e) => setdescripcionDestino(e.target.value.toUpperCase())}
+                        onChange={(e) => setDescripcionDestino(e.target.value)}
                         required></textarea>
                     </div>
+                    <div className="mb-3">
+                      <input
+                        type="file"
+                        className="form-control"
+                        onChange={(e) => validarFormato(e)}
+                      ></input>
+                    </div>
+
+
 
                     <div className="modal-footer border-5">
                       <button
@@ -239,7 +303,7 @@ const Destinos = () => {
                           cleanData(); // Limpia los campos del formulario
                           closeModal();
                           // Restablece el mensaje de error
-                          
+                          document.getElementById('destinosForm').click(); // Cierra el modal
                         }}
                         data-bs-dismiss="modal"
                       >
@@ -247,14 +311,25 @@ const Destinos = () => {
                       </button>
                       <button type="submit" className="btn btn-primary">Guardar Registro</button>
                     </div>
+
                   </form>
+                  {loading && (
+                    <div className="progress">
+                      <div
+                        className="progress-bar bg-primary"
+                        role="progressbar"
+                        style={{ width: `${uploadState}%` }}
+                      ></div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
+      </div>
+      {/* Fin del formulario*/}
 
       {/* Inicio de la tabla de Clientes*/}
       <div className='container container-flex card Larger shadow mt-3'>
@@ -263,7 +338,6 @@ const Destinos = () => {
             <button className="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button">
               <i className="fas fa-ellipsis-v text-gray-400"></i>
             </button>
-
             <div className="dropdown-menu shadow dropdown-menu-end animated--fade-in">
               <p className="text-center dropdown-header">Exportar:</p>
               <Link className="dropdown-item" href="#">
@@ -276,9 +350,11 @@ const Destinos = () => {
             </div>
 
           </div>
+
           <div>
             <h6 className="text-primary fw-bold m-0 mt-1 text-start">Lista de Destinos</h6>
           </div>
+
           <div>
             <input className="form-control me-5" aria-label="Search"
               type="text"
@@ -301,21 +377,31 @@ const Destinos = () => {
             <table className='table table-bordered border-1 table-hover mt-2'>
               {/* ... contenido de la tabla ... */}
               <thead>
-                <tr style={{ backgroundColor: "#008cba", color: "#ffffff" }}>
+                <tr style={{ background: "#008cba", color: "#ffffff" }}>
                   <th scope="col" className="responsive-text">#</th>
                   <th scope="col" className="responsive-text">Nombre Destino</th>
-                  <th scope="col" className="responsive-text">Ubicación</th>
-                  <th scope="col" className="responsive-text">Descripción del destino</th>
-                  <th scope="col" className="responsive-text">Acciones</th>
+                  <th scope="col" className="responsive-text">Ubicacion</th>
+                  <th scope="col" className="responsive-text">Descripcion destino</th>
+                  <th scope="col" className="responsive-text">Imagen</th>
+
+                  <th scope="col">Acciones</th>
                 </tr>
-              </thead >
+              </thead>
               <tbody>
-              {Array.isArray(filteredDestinos) && filteredDestinos.map((item, i) => (
-                  <tr key={item._id}>
-                    <td className="responsive-text">{i + 1}</td>
-                    <td className="responsive-text">{item.nombreDestino}</td>
-                    <td className="responsive-text">{item.ubicacion}</td>
-                    <td className="responsive-text">{item.descripcionDestino}</td>
+                {Array.isArray(filteredDestinos) && filteredDestinos.map((item, i) => (
+                  <tr key={item._id} >
+                    <td >{i + 1}</td>
+                    <td className='responsive-text'>{item.nombreDestino}</td>
+                    <td className='responsive-text'>{item.ubicacionDestino}</td>
+                    <td className='responsive-text'>{item.descripcionDestino}</td>
+                    <td className='responsive-text' style={{ width: 'fit-content' }}>
+                      <img src={item.img} className="img-rounded w-50 p-1" alt="imagen"></img>
+                    </td>
+
+                    {/*<td>{DateTime.fromISO(item.fechanacimientoCliente).toFormat('dd/LL/yyyy')}</td>*/}
+
+
+
                     <td>
                       <div className="btn-group btn-group-sm" role="group">
                         <span className='btn btn-primary d-flex align-items-center me-2' onClick={() => editData(item)}
@@ -332,6 +418,7 @@ const Destinos = () => {
               </tbody>
             </table>
           </div>
+
         </div>
 
         {/* Mostrar tarjetas solo en dispositivos pequeños (móviles) */}
@@ -340,15 +427,17 @@ const Destinos = () => {
             <div key={item._id} className='card border-3'>
               {/* Contenido de la tarjeta */}
               <div className='card-body'>
-                <h5 className='card-title'>Destinos {i + 1}</h5>
+                <h5 className='card-title'>Destino {i + 1}</h5>
+                <img src={item.img} className='card-img-top' alt="imagen del destino"></img>
                 <p className='card-text'>
-                  <strong>Nombre destino:</strong> {item.nombreDestino}<br />
-                  <strong>Ubicación:</strong> {item.ubicacion}<br />
-                  <strong>Descripción del destino:</strong> {item.ubicacion}<br />
+                  <strong>Nombre del destino:</strong> {item.nombreDestino}<br />
+                  <strong>Ubicacion:</strong> {item.ubicacionDestino}<br />
+                  <strong>descripcion del Destino:</strong> {item.descripcionDestino}<br />
+
                 </p>
                 <div className='btn-group btn-group-xl'>
                   <span className='btn btn-primary d-flex align-items-center me-2'
-                    onClick={() => editData(item)}
+                    onClick={() => updateDestino(destinos._id)}
                   >
                     <i className="fa-solid fa-pencil space-i"></i>
                   </span>
@@ -362,6 +451,7 @@ const Destinos = () => {
             </div>
           ))}
         </div>
+
         <div className="my-1 d-flex justify-content-end mb-3 border-5">
           <Pagination
             className='pagination'
@@ -371,11 +461,8 @@ const Destinos = () => {
             onChange={onchangePage}
           />
         </div>
-
-
       </div>
-    </div>
-
+    </div >
   )
 }
 

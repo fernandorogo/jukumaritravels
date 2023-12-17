@@ -1,77 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navibar from '../components/Navibar'
-import listaDestinosTuristicos from '../view/ListaDestinosTuristicos';
 import Footer from '../components/Footer'
+import axios from 'axios'
 
 const DestinosTuristicos = () => {
-  const [filtroCiudad, setFiltroCiudad] = useState('');
 
-  const filtrarPorCiudad = (event) => {
-    setFiltroCiudad(event.target.value);
-  };
+  const [destinos, setDestinos] = useState([]);
 
-  const obtenerCiudadesUnicas = () => {
-    const ciudadesUnicas = [...new Set(listaDestinosTuristicos.map((destino) => destino.destino))];
-    return ciudadesUnicas;
-  };
+ 
+  useEffect(() => {
+    getData();
+  }, [])
 
-  const destinosFiltrados = listaDestinosTuristicos.filter((destino) =>
-    destino.destino.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').includes(filtroCiudad.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
-  );
+  const getData = async () => {
+    try {
+      const { data } = await axios.get(`/api/destinos/listall`);
+      setDestinos(data.destinos)
+
+    } catch (error) {
+      if (!error.response.data.ok) {
+        return alert(error.response.data.mensaje)
+      }
+      console.log("error en la función getData", error.message)
+
+    }
+  }
 
   return (
     <div>
-      <Navibar/>
-      <div className="container">
-      
-      <h1 className="my-4">Nuestros Destinos Turísticos</h1>
-      <div className="row mb-3">
-        <div className="col-md-6">
-          <label htmlFor="filtroCiudad" className="form-label">
-            Filtrar por ciudad: felter gilter filter
-          </label>
-          <input
-            type="text"
-            id="filtroCiudad"
-            className="form-control"
-            value={filtroCiudad}
-            onChange={filtrarPorCiudad}
-          />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="selectCiudad" className="form-label">
-            Ciudades disponibles:
-          </label>
-          <select id="selectCiudad" className="form-select" value={filtroCiudad} onChange={filtrarPorCiudad}>
-            <option value="">Todas las ciudades</option>
-            {obtenerCiudadesUnicas().map((ciudad, index) => (
-              <option value={ciudad} key={index}>
-                {ciudad}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div className="row">
-        {destinosFiltrados.map((destino, index) => (
-          <div className="col-md-4" key={index}>
-            <div className="card mb-4">
-              <img src={destino.imagen} className="card-img-top" alt={destino.destino} />
-              <div className="card-body">
-                <h5 className="card-title">{destino.destino}</h5>
-                <p className="card-text">{destino.lema}</p>
-                <p className="card-text">{destino.resena}</p>
-              </div>
+      <Navibar />
+
+      <div className='card-galery mt-4'>
+        <div className='container'>
+          <div className='heading text-center mb-4'>
+            <h2 className='fw-bold'>
+              Nuestros Destinos Turísticos
+            </h2>
+            <div className='row row-cols-1 row-cols-md-3 g-4'>
+
+              {Array.isArray(destinos) && destinos.map((item) =>
+              (
+                <div className='col-12 col-md-6 col-xl-4' key={item._id}>
+                  <div className='card h-100 border-0 transform-on-hover shadow'>
+
+                    <img src={item.img} className='card-img-top'></img>
+                    <div className='card-body'>
+                      <h6 className='card-title fw-bold'>{item.nombreDestino}</h6>
+                      <p className='card-text'>{item.ubicacion}</p>
+                      <p className=' card-text'>{item.descripcionDestino}</p>
+                    </div>
+                  </div>
+                </div>
+
+              ))}
             </div>
           </div>
-        ))}
+        </div>
+
+
       </div>
+
+      <Footer />
     </div>
 
-          <Footer/> 
-    </div>
-      
-    
+
   );
 };
 
