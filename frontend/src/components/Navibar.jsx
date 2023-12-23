@@ -24,7 +24,7 @@ const Navibar = () => {
       <nav className="navbar navbar-expand-lg navbar-light colormenu">
         <div className="container-fluid">
           <Link to="/" className="navbar-brand">
-            <img className="rounded-circle border border-5" src={Logo} style={{ width: 100 }} alt="" />
+            <img className="rounded-circle" src={Logo} style={{ width: 200 }} alt="" />
           </Link>
           <button
             className="navbar-toggler"

@@ -13,7 +13,7 @@ const Paquetes = () => {
   const [valorPaqueteTuristico, setValorPaqueteTuristico] = useState('');
   const [destinos, setDestinos] = useState([]);
   const [selectedDestino, setSelectedDestino] = useState("");
-  const [destinoNombres, setDestinoNombres] = useState({}); 
+  const [destinoNombres, setDestinoNombres] = useState({});
   //Search
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredPaquetes, setFilteredPaquetes] = useState([]); // Aquí almacenarás los Paquetes filtrados
@@ -33,7 +33,6 @@ const Paquetes = () => {
 
   const [edit, setEdit] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false)
-
 
   useEffect(() => {
     getData(page);
@@ -121,16 +120,14 @@ const Paquetes = () => {
   const updatePaquete = async () => {
     try {
       const id = localStorage.getItem('id');
-      const elementosAEliminar = [];
-
       const newPaquete = {
         nombrePaqueteTuristico,
         reseñaPaqueteTuristico,
         valorPaqueteTuristico,
         destinos: selectedDestino, // Utiliza el destino seleccionado
-        //----------------------------------------------------------------
-        detallesPaqueteTuristico: [], // Agrega detallesPaqueteTuristico vacío por ahora
-        deldetallesPaqueteTuristico: elementosAEliminar // Agrega deldetallesPaqueteTuristico vacío por ahora
+        detallesPaqueteTuristico: detallesPaquetesTuristicos, // Agrega detallesPaqueteTuristico
+
+
       };
 
       // Realizar la solicitud PUT para actualizar el paquete turístico
@@ -159,10 +156,8 @@ const Paquetes = () => {
   };
 
 
-
-
   const editData = (item) => {
-    console.log('Datos de item:', item); // Agrega esta línea
+
     setEdit(true);
     setNombrePaqueteTuristico(item.nombrePaqueteTuristico || '');
     setReseñaPaqueteTuristico(item.reseñaPaqueteTuristico || '');
@@ -171,10 +166,7 @@ const Paquetes = () => {
     handleDestinoChange(item.destinos);
 
     // Carga los detalles existentes en el estado detallesPaqueteTuristicoEdit
-    //setDetallesPaquetesTuristicos(item.detallesPaqueteTuristico || []);
-    //setDetallesPaquetesTuristicos([...item.detallesPaqueteTuristico]);
-    setDetallesPaquetesTuristicos(item.detallesPaqueteTuristico);
-
+    setDetallesPaquetesTuristicos(item.detallesPaqueteTuristico || []);
 
     localStorage.setItem('id', item._id);
     setIsModalOpen(true);
@@ -183,7 +175,6 @@ const Paquetes = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
 
   //este codigo funciona muy bien. Borra todo desde el _id del paquete
   const deletePaquete = async (id) => {
@@ -221,7 +212,6 @@ const Paquetes = () => {
     edit ? updatePaquete() : savePaquete();
   };
 
-
   const handleAddRow = () => {
     // Crea una nueva fila de detalle con valores iniciales
     const newDetail = {
@@ -234,11 +224,7 @@ const Paquetes = () => {
     setDetallesPaquetesTuristicos([...detallesPaquetesTuristicos, newDetail]);
   };
 
-
-
-
   //----------------------------------------------------------------
-
 
   // Función para obtener la lista de destinos desde el servidor
   const obtenerDestinos = async () => {
@@ -258,7 +244,6 @@ const Paquetes = () => {
     }
   };
 
-
   //Función para manejar el cambio de destino
   const handleDestinoChange = (destinosId) => {
     setSelectedDestino(destinosId);
@@ -268,9 +253,6 @@ const Paquetes = () => {
   //Mi filtro
   const searchFields = [
     'nombrePaqueteTuristico',
-  
-    
-   
 
     // Agrega más campos aquí
   ];
@@ -288,46 +270,21 @@ const Paquetes = () => {
     setFilteredPaquetes(filtered);
   };
 
-
   //------------------------------------------------------
 
-  // Función para agregar detalles a un paquete turístico
-  const addToSet = async (packageId, detailsToAdd) => {
-    try {
-      // Realiza una solicitud POST para agregar detalles al paquete
-      const response = await axios.post(`/api/paquetes/${packageId}/detalles`, { detailsToAdd });
-
-      // Llama a getData para actualizar la lista de detalles
-      getData(page); // Asegúrate de que la variable "page" esté disponible en este contexto
-
-      // Devuelve la respuesta del servidor (puede contener información adicional)
-      return response.data;
-    } catch (error) {
-      // Maneja errores si la solicitud falla
-      console.error('Error al agregar detalles:', error);
-      throw error; // Lanza el error para que pueda ser manejado en otro lugar si es necesario
-    }
-  }
+  const handleEliminarDetalle = (id) => {
+    const updatedDetalles = detallesPaquetesTuristicos.filter((detalle) => detalle._id !== id);
+    setDetallesPaquetesTuristicos(updatedDetalles);
+  };
 
 
-  // Función para eliminar detalles de un paquete turístico
-  const pullAll = async (packageId, detailsToRemove) => {
-    try {
-      const response = await axios.delete(`/api/paquetes/${packageId}/detalles`, { data: { details: detailsToRemove } });
-      return response.data;
-    } catch (error) {
-      console.error('Error al eliminar detalles:', error);
-      throw error;
-    }
-  }
 
-  //------------------------------------------------------
 
 
   return (
     <div>
       <div className=" container" style={{ textAlign: 'left' }}>
-        <Breadcrumbs/>
+        <Breadcrumbs />
       </div>
       <div className='container-md mt-5'>
         <div className={`modal fade ${isModalOpen ? 'show' : ''}`} id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden={!isModalOpen} style={{ display: isModalOpen ? 'block' : 'none' }}>
@@ -363,7 +320,7 @@ const Paquetes = () => {
                             className="form-control"
                             id="reseñaPaqueteTuristico"
                             value={reseñaPaqueteTuristico}
-                            onChange={(e) => setReseñaPaqueteTuristico(e.target.value.toUpperCase())}
+                            onChange={(e) => setReseñaPaqueteTuristico(e.target.value)}
                           ></textarea>
                         </div>
                         <div className="row">
@@ -471,22 +428,15 @@ const Paquetes = () => {
                                 </td>
                                 <td>
                                   <div className="btn-group btn-group-sm" role="group">
-                                    <span className='btn btn-danger me-2' onClick={() => pullAll(detail._id)}>
+                                    <span className='btn btn-danger me-2' onClick={() => handleEliminarDetalle(detail._id)}>
                                       <i className="fa-solid fa-trash"></i>
-                                    </span>
-                                    <span className='btn btn-success' onClick={() => addToSet(detail._id)}>
-                                      <i className="fa-solid fa-plus"></i> 
                                     </span>
                                   </div>
                                 </td>
                               </tr>
                             ))}
                           </tbody>
-
-
                         </table>
-
-
                       </div>
                     </div>
                   </form>

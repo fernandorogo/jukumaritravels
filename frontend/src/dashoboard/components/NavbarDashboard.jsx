@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Logo from '../Images/Logo.png'
 import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../Images/Logo.png';
 
 const NavbarDashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -23,7 +23,7 @@ const NavbarDashboard = () => {
       <nav className="navbar navbar-expand-lg navbar-light colormenu">
         <div className="container-fluid">
           <Link to="/" className="navbar-brand">
-            <img className="rounded-circle border border-5" src={Logo} style={{ width: 100 }} alt="" />
+          <img className="rounded-circle" src={Logo} style={{ width: 200 }} alt="" />
           </Link>
           <button className="navbar-toggler" type="button" onClick={handleToggle}             aria-controls="navbarSupportedContent" aria-expanded={!isCollapsed} aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>

@@ -82,6 +82,12 @@ const Destinos = () => {
     setImage('')
     setPreview('')
 
+    // Limpiar el input de archivos
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+      fileInput.value = ''; // Establecer el valor del input de archivos a una cadena vacía
+    }
+
     setEdit(false);
   }
 
@@ -96,8 +102,6 @@ const Destinos = () => {
   const onchangePage = (page) => {
     getData(page)
   }
-
-
 
   const saveDestino = async (datos) => {
     try {
@@ -164,7 +168,6 @@ const Destinos = () => {
     setIsModalOpen(false);
 
   };
-
 
   const deleteDestino = async (id) => {
     try {
@@ -394,12 +397,9 @@ const Destinos = () => {
                     <td className='responsive-text'>{item.nombreDestino}</td>
                     <td className='responsive-text'>{item.ubicacionDestino}</td>
                     <td className='responsive-text'>{item.descripcionDestino}</td>
-                    <td className='responsive-text' style={{ width: 'fit-content' }}>
+                    <td className='responsive-text w-25' style={{ width: 'fit-content' }}>
                       <img src={item.img} className="img-rounded w-50 p-1" alt="imagen"></img>
                     </td>
-
-                    {/*<td>{DateTime.fromISO(item.fechanacimientoCliente).toFormat('dd/LL/yyyy')}</td>*/}
-
 
 
                     <td>

@@ -172,9 +172,9 @@ const Home = () => {
                   <div className="row align-items-center justify-content-center">
                     <ul>
                       {clientes.map((cliente) => (
-                        <li key={cliente._id}>
-                          <p>{cliente.nombre1Cliente} {cliente.apellido1Cliente} {cliente.fechanacimientoCliente.slice(0, 10)}</p>
-                        </li>
+                        <ol key={cliente._id}>
+                          {cliente.nombre1Cliente} {cliente.apellido1Cliente} - {cliente.fechanacimientoCliente.slice(0, 10)}
+                        </ol>
                       ))}
                     </ul>
                   </div>
@@ -202,7 +202,9 @@ const Home = () => {
                   <div className="row align-items-center justify-content-center">
                     <ul>
                       {destinos.map((destino, index) => (
-                        <li key={index}>{destino.nombreDestino}</li>
+                        <ol key={index}>
+                          {destino.nombreDestino}
+                        </ol>
                       ))}
                     </ul>
                   </div>

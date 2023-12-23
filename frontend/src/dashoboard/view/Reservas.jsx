@@ -13,7 +13,7 @@ const Reservas = () => {
   const [fechaSalida, setFechaSalida] = useState('')
   const [fechaLlegada, setFechaLlegada] = useState('')
   const [npasajeros, setNPasajeros] = useState('')
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   //Fecha error
@@ -354,13 +354,13 @@ const Reservas = () => {
                         </div>
                         <div className="col-md-3 mb-3">
                           <label htmlFor="paquete" className="form-label"># Pasajeros: </label>
-                          <input 
-                          className="form-control" 
-                          type="text"
-                          value={npasajeros} 
-                          onChange={(e) => setNPasajeros(e.target.value)} />
+                          <input
+                            className="form-control"
+                            type="text"
+                            value={npasajeros}
+                            onChange={(e) => setNPasajeros(e.target.value)} />
                         </div>
-                       
+
                       </div>
 
                       <div className="row mt-3">
@@ -562,9 +562,6 @@ const Reservas = () => {
                     <td className="responsive-text">{paqueteNombres[item.paquetesturisticos]}</td>
                     <td>
                       <div className="btn-group btn-group-sm" role="group">
-                      <span className='btn btn-warning d-flex align-items-center me-2'>
-                          <i className="fa-solid fa-user"></i>
-                        </span>
                         <span className='btn btn-primary d-flex align-items-center me-2'>
                           <i className="fa-solid fa-pencil space-i"></i>
                         </span>
